@@ -1,0 +1,1048 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ice Cream Security Demo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..800,0..100,0..1&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: presenter theater. Protected phone left, the engine in the middle, trusted contact phone right. Below 1100px the three become tabs. */
+:root{
+  --vanilla:#F5EDDF; --cream:#FFFAF1; --cocoa:#241C17; --pistachio:#4A6350; --sorbet:#EC8468;
+  --ink2:#6E5F53; --ink3:#9A8B7E; --line:#E3D6C3; --pist-soft:#DDE6DC; --sorb-soft:#F9DED4; --cocoa-2:#3A2E26;
+  --ch-phone:#3D5A78; --ch-msg:#76568A; --ch-browser:#A06C1E; --ch-app:#4A6350; --ch-money:#B5492F;
+  --ios-bg:#F2F2F7; --ios-card:#FFFFFF; --ios-sep:#D8D8DD; --ios-l2:#3C3C43; --ios-l3:#8E8E93; --ios-blue:#0A7AFF; --ios-green:#30C25A; --ios-end:#F2443A;
+  --display:"Fraunces", "Iowan Old Style", Georgia, serif;
+  --body:"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --sys:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--vanilla);color:var(--cocoa);font-family:var(--body);font-size:14px;-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:2.5px solid var(--sorbet);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- top bar ---------- */
+.top{height:64px;display:flex;align-items:center;gap:18px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));border-bottom:1px solid var(--line);background:var(--vanilla)}
+.brand{display:flex;align-items:center;gap:9px;flex:none}
+.brand svg{height:28px;width:28px}
+.brand .wm{font-family:var(--display);font-variation-settings:"SOFT" 90,"WONK" 1;font-weight:560;font-size:21px;letter-spacing:-.2px;white-space:nowrap}
+.masks{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-width:0;flex:1}
+.masks::-webkit-scrollbar{display:none}
+.masks button{flex:none;border:1px solid var(--line);background:transparent;border-radius:999px;padding:8px 14px;font-size:13.5px;font-weight:500;color:var(--ink2);white-space:nowrap}
+.masks button.on{background:var(--cocoa);border-color:var(--cocoa);color:var(--vanilla)}
+.masks .sep{flex:none;width:1px;background:var(--line);margin:6px 4px}
+.ctl{display:flex;gap:6px;flex:none}
+.ctl button{border:none;background:var(--cream);border-radius:10px;height:38px;min-width:38px;padding:0 12px;font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:7px;box-shadow:0 0 0 1px var(--line) inset}
+.ctl button.pri{background:var(--pistachio);color:var(--cream);box-shadow:none;min-width:92px;justify-content:center}
+.ctl button.tog.on{background:var(--pist-soft)}
+.ctl svg{width:15px;height:15px}
+
+/* ---------- stage ---------- */
+.stage{height:calc(100% - 64px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.32fr) minmax(0,.86fr);gap:18px;padding:16px max(20px,env(safe-area-inset-right,0px)) 14px max(20px,env(safe-area-inset-left,0px))}
+.pane{min-width:0;min-height:0;display:flex;flex-direction:column}
+.pane .cap{font-size:11.5px;font-weight:600;letter-spacing:.9px;text-transform:uppercase;color:var(--ink3);display:flex;justify-content:space-between;gap:8px;padding:0 4px 8px}
+.slot{flex:1;min-height:0;display:flex;justify-content:center;align-items:flex-start}
+.tabs{display:none}
+
+/* ---------- phone frame ---------- */
+.pwrap{position:relative;flex:none}
+.phone{position:absolute;left:0;top:0;width:414px;height:868px;transform-origin:0 0;border-radius:64px;background:#1A1512;padding:12px;box-shadow:0 0 0 1.5px #4A3F37 inset,0 30px 70px rgba(36,28,23,.28),0 6px 16px rgba(36,28,23,.16)}
+.screen{position:relative;width:390px;height:844px;border-radius:53px;overflow:hidden;background:var(--ios-bg);font-family:var(--sys);color:#000}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);height:36px;width:124px;border-radius:20px;background:#000;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:0 12px;transition:width .5s cubic-bezier(.2,.9,.25,1)}
+.island .il{display:flex;align-items:center;gap:7px;opacity:0;transition:opacity .3s}
+.island .il svg{width:18px;height:18px}
+.island .il span{color:#F5EDDF;font-size:12px;font-weight:600;white-space:nowrap}
+.island .ir{opacity:0;width:9px;height:9px;border-radius:50%;background:var(--sorbet);transition:opacity .3s}
+.island.live{width:176px}
+.island.live .il span{font-size:11px}
+.island.live .il,.island.live .ir{opacity:1}
+.sbar{position:absolute;top:0;left:0;right:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:6px 34px 0 46px;font-size:16px;font-weight:600;z-index:40;pointer-events:none}
+.sbar.dark{color:#fff}
+.sbar .ico{display:flex;gap:6px;align-items:center}
+.view{position:absolute;inset:0;display:flex;flex-direction:column;animation:fadein .32s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.homebar{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:#000;opacity:.85;z-index:45}
+.homebar.light{background:#fff}
+
+/* tap indicator */
+.tapme{position:relative}
+.tapme::after{content:"";position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:0 0 0 2px rgba(36,28,23,.25);animation:tap .9s ease-out infinite;pointer-events:none}
+@keyframes tap{0%{transform:scale(.4);opacity:0}30%{opacity:1}100%{transform:scale(1.6);opacity:0}}
+
+/* ---------- ICS app (protected) ---------- */
+.ics{background:var(--cream);color:var(--cocoa)}
+.anav{padding:62px 22px 0;display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink2);font-weight:500}
+.anav svg{width:20px;height:20px;flex:none}
+.ics h1{font-family:var(--display);font-variation-settings:"SOFT" 85,"WONK" 0;font-weight:560;font-size:38px;letter-spacing:-.6px;margin:14px 22px 0;line-height:1.05}
+.calmdisc{width:132px;height:132px;border-radius:50%;background:var(--pist-soft);margin:26px auto 16px;display:flex;align-items:center;justify-content:center}
+.ics .hl{font-family:var(--display);font-variation-settings:"SOFT" 85;font-weight:540;font-size:26px;text-align:center;margin:0 22px;letter-spacing:-.3px;line-height:1.15;text-wrap:balance}
+.ics .sub{font-size:17px;color:var(--ink2);text-align:center;margin:8px 30px 0;line-height:1.4;text-wrap:balance}
+.ics .grp{background:#fff;border-radius:16px;margin:0 18px;box-shadow:0 0 0 1px var(--line);overflow:hidden}
+.ics .grp .r{display:flex;align-items:center;gap:13px;padding:14px 16px;border-bottom:1px solid #EFE6D8;min-height:62px}
+.ics .grp .r:last-child{border-bottom:none}
+.ics .r .av{width:36px;height:36px;border-radius:50%;background:var(--pist-soft);color:var(--pistachio);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:15px;flex:none}
+.ics .r .t1{font-size:18px;display:block}
+.ics .r .t2{font-size:14px;color:var(--ink3);display:block;margin-top:2px}
+.ics .hdr{font-size:12.5px;letter-spacing:.7px;text-transform:uppercase;color:var(--ink3);font-weight:600;margin:24px 34px 8px}
+.ics .foot{margin-top:auto;padding:12px 18px 34px;display:flex;flex-direction:column;gap:9px}
+.abtn{width:100%;min-height:58px;border:none;border-radius:16px;background:var(--pistachio);color:var(--cream);font-size:18.5px;font-weight:600;display:flex;align-items:center;justify-content:center;padding:10px 16px;text-align:center}
+.abtn.ghost{background:transparent;color:var(--pistachio);box-shadow:0 0 0 1.5px var(--pistachio) inset}
+.abtn.cream{background:var(--cream);color:var(--cocoa)}
+.abtn.out{background:transparent;color:var(--vanilla);box-shadow:0 0 0 1.5px rgba(245,237,223,.45) inset}
+
+/* hot field: the interrupt */
+.hot{background:var(--cocoa);color:var(--vanilla)}
+.hot .anav{color:rgba(245,237,223,.7)}
+.hot .big{font-family:var(--display);font-variation-settings:"SOFT" 85,"WONK" 0;font-weight:520;font-size:33px;line-height:1.14;letter-spacing:-.4px;margin:0 26px;text-wrap:balance}
+.hot .big em{font-style:normal;color:var(--sorbet)}
+.hot .small{font-size:17.5px;line-height:1.42;color:rgba(245,237,223,.78);margin:16px 26px 0}
+.hot .mid{flex:1;display:flex;flex-direction:column;justify-content:center}
+.ring{width:120px;height:120px;border-radius:50%;margin:0 auto 28px;display:flex;align-items:center;justify-content:center;position:relative}
+.ring::before,.ring::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--sorbet);opacity:.5;animation:breathe 4s ease-in-out infinite}
+.ring::after{animation-delay:2s}
+@keyframes breathe{0%{transform:scale(.8);opacity:.6}100%{transform:scale(1.5);opacity:0}}
+.ring svg{width:64px;height:64px}
+.quote{background:var(--cream);color:var(--cocoa);border-radius:20px;margin:22px 22px 0;padding:22px 22px 20px}
+.quote .q{font-family:var(--display);font-variation-settings:"SOFT" 90,"WONK" 1;font-size:27px;line-height:1.2;font-weight:480}
+.quote .qsig{margin-top:14px;font-size:15px;color:var(--ink2)}
+.eyebrow{font-size:13px;letter-spacing:.8px;text-transform:uppercase;font-weight:600;color:var(--sorbet);margin:0 26px 14px}
+.timer{font-family:var(--display);font-variation-settings:"SOFT" 60;font-weight:350;font-size:58px;letter-spacing:-1px;text-align:center;font-variant-numeric:tabular-nums;margin-top:6px}
+.timerl{font-size:14.5px;color:var(--ink3);text-align:center;margin-top:2px}
+.held{display:flex;align-items:center;gap:12px;background:var(--pist-soft);border-radius:16px;margin:16px 18px 0;padding:14px 16px;font-size:16px;line-height:1.35}
+.held .av{width:38px;height:38px;border-radius:50%;background:var(--pistachio);color:var(--cream);display:flex;align-items:center;justify-content:center;font-weight:700;flex:none}
+.fact{font-size:15px;color:var(--ink2);margin:14px 26px 0;line-height:1.42;text-align:center}
+
+/* ---------- native app screens ---------- */
+.call{background:radial-gradient(120% 70% at 50% 0%,#4B5563 0%,#1F2329 70%);color:#fff}
+.call .who{text-align:center;margin-top:92px}
+.call .who .nm{font-size:34px;font-weight:400;letter-spacing:-.3px}
+.call .who .sb{font-size:17px;opacity:.65;margin-top:4px}
+.call .who .du{font-size:17px;opacity:.85;margin-top:10px;font-variant-numeric:tabular-nums}
+.call .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:26px 0;margin:auto 40px 34px;justify-items:center}
+.call .pad div{width:78px;text-align:center;font-size:13px;opacity:.9}
+.call .pad i{display:flex;width:78px;height:78px;border-radius:50%;background:rgba(255,255,255,.18);margin-bottom:7px;align-items:center;justify-content:center}
+.call .pad i svg{width:30px;height:30px}
+.call .end{width:78px;height:78px;border-radius:50%;background:var(--ios-end);margin:0 auto 64px;display:flex;align-items:center;justify-content:center}
+.call .muted{position:absolute;left:24px;right:24px;top:300px;background:rgba(245,237,223,.14);border-radius:16px;padding:12px 14px;font-size:15px;text-align:center;display:none}
+
+.msg{background:#fff}
+.msg .mh{padding:56px 0 10px;text-align:center;border-bottom:.5px solid var(--ios-sep);background:#F9F9F9}
+.msg .mh .av{width:52px;height:52px;border-radius:50%;margin:0 auto 4px;background:linear-gradient(#A5ABB7,#848A96);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:500}
+.msg .mh .n{font-size:12.5px;color:#000}
+.msg .ms{flex:1;padding:14px 14px 0;display:flex;flex-direction:column;gap:6px;overflow:hidden;justify-content:flex-end}
+.msg .b{max-width:76%;padding:9px 14px;border-radius:19px;font-size:17px;line-height:1.3;background:#E9E9EB;align-self:flex-start;animation:fadein .3s ease}
+.msg .b.me{background:var(--ios-blue);color:#fff;align-self:flex-end}
+.msg .b.green{background:#E9E9EB}
+.msg .b.img{padding:6px;background:#E9E9EB}
+.msg .day{text-align:center;font-size:12px;color:var(--ios-l3);margin:6px 0}
+.msg .inp{margin:10px 12px 34px;height:38px;border-radius:19px;border:1px solid var(--ios-sep);display:flex;align-items:center;padding:0 14px;color:#B0B0B5;font-size:16px}
+
+.web{background:#fff}
+.web .pg{flex:1;overflow:hidden;padding-top:54px}
+.web .url{margin:0 14px 34px;height:48px;border-radius:24px;background:rgba(242,242,247,.96);box-shadow:0 4px 18px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;gap:6px;font-size:16px;color:#000}
+.web .url svg{width:13px;height:13px}
+.fake1{background:#0E3A6B;color:#fff;padding:22px 20px 26px}
+.fake1 .lg{font-weight:700;font-size:20px;letter-spacing:-.2px}
+.fake1 .bad{margin-top:18px;background:#C9302C;border-radius:10px;padding:14px;font-weight:700;font-size:18px;line-height:1.25}
+.fake1 .cs{margin-top:14px;font-size:15px;line-height:1.5;opacity:.9}
+.fake1 .bt{margin-top:18px;background:#fff;color:#0E3A6B;border-radius:10px;padding:14px;text-align:center;font-weight:700;font-size:17px}
+.fake2{padding:20px;font-family:var(--sys)}
+.fake2 .lg{font-weight:800;font-size:20px;color:#A07A12;letter-spacing:.2px}
+.fake2 .bal{font-size:40px;font-weight:700;margin-top:18px;letter-spacing:-.8px}
+.fake2 .up{color:#16A34A;font-weight:600;font-size:16px;margin-top:4px}
+.fake2 .bt{margin-top:18px;background:#A07A12;color:#fff;border-radius:12px;padding:15px;text-align:center;font-weight:700;font-size:17px}
+.sheetalert{position:absolute;left:40px;right:40px;top:300px;background:rgba(242,242,247,.97);border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center;z-index:30;animation:fadein .25s ease}
+.sheetalert .tt{font-size:17px;font-weight:600;padding:20px 18px 4px}
+.sheetalert .tx{font-size:14px;padding:0 18px 18px;line-height:1.35}
+.sheetalert .bs{display:flex;border-top:.5px solid #B5B5BA}
+.sheetalert .bs div{flex:1;padding:12px;font-size:17px;color:var(--ios-blue)}
+.sheetalert .bs div+div{border-left:.5px solid #B5B5BA;font-weight:600}
+.dim{position:absolute;inset:0;background:rgba(0,0,0,.28);z-index:25}
+
+.bank{background:#F4F6F8}
+.bank .bh{padding:62px 20px 12px;background:#123B5D;color:#fff}
+.bank .bh .k{font-size:14px;opacity:.75}
+.bank .bh .t{font-size:26px;font-weight:700;margin-top:4px}
+.bank .bx{background:#fff;margin:14px 16px 0;border-radius:14px;padding:14px 16px}
+.bank .bx .l{font-size:13px;color:#6B7280}
+.bank .bx .v{font-size:18px;margin-top:3px;font-weight:500}
+.bank .bx .v small{font-size:14px;color:#6B7280;font-weight:400}
+.bank .new{display:inline-block;margin-left:6px;background:#FDE7C4;color:#8A5300;font-size:11.5px;font-weight:700;padding:2px 7px;border-radius:6px;vertical-align:2px}
+.bank .amt{font-size:46px;font-weight:700;letter-spacing:-1px;margin-top:2px}
+.bank .send{margin:auto 16px 34px;height:56px;border-radius:14px;background:#123B5D;color:#fff;font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center}
+.bank .ok{text-align:center;margin-top:120px}
+.bank .ok .c{width:96px;height:96px;border-radius:50%;background:#DCFCE7;margin:0 auto 18px;display:flex;align-items:center;justify-content:center}
+.bank .ok .t{font-size:26px;font-weight:700}
+.bank .ok .s{font-size:17px;color:#6B7280;margin-top:6px}
+
+.lightsheet{position:absolute;left:10px;right:10px;bottom:10px;background:var(--cream);border-radius:34px;padding:22px 20px 22px;z-index:30;box-shadow:0 -10px 50px rgba(0,0,0,.25);animation:up .38s cubic-bezier(.2,.9,.25,1)}
+@keyframes up{from{transform:translateY(110%)}to{transform:none}}
+.lightsheet .anav{padding:0;display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink2);font-weight:500}
+.lightsheet .anav svg{width:20px;height:20px}
+.lightsheet .q{font-family:var(--display);font-variation-settings:"SOFT" 85;font-weight:520;font-size:25px;line-height:1.2;margin:14px 2px 18px;color:var(--cocoa);text-wrap:balance}
+.lightsheet .abtn{margin-top:8px}
+
+/* SOS line: conference call, first ring */
+.ics .r .av.icsav{background:var(--cocoa)}
+.ics .r .av.icsav svg{width:22px;height:22px}
+.lightsheet .sm{font-size:15.5px;line-height:1.4;color:var(--ink2);margin:-8px 2px 14px}
+.call .cl{margin:24px 18px 0;display:flex;flex-direction:column;gap:10px}
+.call .pp{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.1);border-radius:16px;padding:12px 14px;animation:fadein .35s ease;transition:opacity .4s}
+.call .pp .av{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:17px;flex:none}
+.call .pp.isics .av{background:var(--cocoa);box-shadow:0 0 0 1.5px rgba(245,237,223,.35) inset}
+.call .pp .av svg{width:26px;height:26px}
+.call .pp .n{display:block;font-size:17px;font-weight:500}
+.call .pp .s{display:block;font-size:13.5px;opacity:.72;margin-top:2px;line-height:1.3}
+.call .pp.gone{opacity:.42}
+.call .pp.gone .n{text-decoration:line-through}
+.call .rec{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;letter-spacing:.6px;color:#FFB4A2;flex:none}
+.call .rec i{width:8px;height:8px;border-radius:50%;background:var(--sorbet);animation:blink 1.4s ease-in-out infinite}
+@keyframes blink{50%{opacity:.25}}
+.call .said{margin:16px 18px 0;background:var(--cream);color:var(--cocoa);border-radius:18px;padding:14px 16px 16px;font-family:var(--display);font-variation-settings:"SOFT" 85;font-size:19px;line-height:1.32;animation:fadein .4s ease}
+.call .said small{display:block;font-family:var(--body);font-size:11.5px;letter-spacing:.7px;text-transform:uppercase;font-weight:600;color:var(--ink2);margin-bottom:6px}
+.call .first{margin:24px auto 0;display:inline-block;background:rgba(245,237,223,.12);border-radius:14px;padding:12px 20px;font-size:14px;color:rgba(245,237,223,.82)}
+.call .first b{display:block;font-family:var(--display);font-weight:500;font-size:30px;color:var(--vanilla);margin-top:2px}
+.ics .rule2{margin:14px 18px 0;background:var(--vanilla);border-radius:16px;padding:14px 16px;font-size:15.5px;line-height:1.4}
+.fam .callin.icsin .av{background:var(--cocoa)}
+.fam .callin.icsin .av svg{width:26px;height:26px}
+
+/* lock screen and family */
+.lock{background:linear-gradient(170deg,#C9B79F 0%,#8C735B 55%,#4F3D30 100%);color:#fff}
+.lock .dt{text-align:center;margin-top:70px;font-size:19px;font-weight:500;opacity:.92}
+.lock .tm{text-align:center;font-size:96px;font-weight:600;letter-spacing:-3px;line-height:1;margin-top:2px;font-variant-numeric:tabular-nums}
+.lock .notes{margin:auto 10px 120px;display:flex;flex-direction:column;gap:8px}
+.note{background:rgba(250,246,240,.84);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);color:#000;border-radius:22px;padding:13px 14px;display:flex;gap:11px;animation:fadein .4s ease}
+.note .ic{width:40px;height:40px;border-radius:10px;background:var(--vanilla);flex:none;display:flex;align-items:center;justify-content:center}
+.note .ic svg{width:28px;height:28px}
+.note .hd{display:flex;justify-content:space-between;font-size:15px;font-weight:600}
+.note .hd span{font-weight:400;color:#6E6E73;font-size:13.5px}
+.note .bd{font-size:15px;line-height:1.3;margin-top:2px}
+.lock .flash{position:absolute;bottom:44px;left:50px;width:50px;height:50px;border-radius:50%;background:rgba(0,0,0,.25)}
+.lock .cam{position:absolute;bottom:44px;right:50px;width:50px;height:50px;border-radius:50%;background:rgba(0,0,0,.25)}
+
+.fam .body{flex:1;overflow:hidden}
+.fam .alertline{font-family:var(--display);font-variation-settings:"SOFT" 85;font-weight:600;font-size:34px;color:var(--cocoa);margin:12px 22px 0;letter-spacing:-.4px}
+.fam .lead{font-size:17px;line-height:1.42;margin:10px 22px 0;color:var(--cocoa)}
+.fam .sc{display:flex;align-items:baseline;gap:8px;margin:16px 22px 0}
+.fam .sc b{font-family:var(--display);font-size:44px;font-weight:600;letter-spacing:-1px;color:var(--ch-money)}
+.fam .sc span{font-size:14.5px;color:var(--ink3)}
+.fam .bar{height:7px;border-radius:4px;background:#EFE6D8;margin:8px 22px 0;overflow:hidden}
+.fam .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--pistachio),#C9A24A 55%,var(--sorbet))}
+.fam .tl{margin:8px 18px 0;background:#fff;border-radius:16px;box-shadow:0 0 0 1px var(--line);overflow:hidden}
+.fam .ev{display:flex;gap:11px;padding:11px 14px;border-bottom:1px solid #EFE6D8}
+.fam .ev:last-child{border-bottom:none}
+.fam .ev .dot{width:9px;height:9px;border-radius:50%;margin-top:6px;flex:none}
+.fam .ev .tx{font-size:15px;line-height:1.32;display:block}
+.fam .ev .tm{font-size:12.5px;color:var(--ink3);display:block;margin-top:2px}
+.fam .callin{margin:58px 10px 0;background:#1F2329;color:#fff;border-radius:24px;padding:12px 14px;display:flex;align-items:center;gap:11px;animation:fadein .4s ease}
+.fam .callin .av{width:42px;height:42px;border-radius:50%;background:var(--pist-soft);color:var(--pistachio);font-weight:700;display:flex;align-items:center;justify-content:center}
+.fam .callin .g{margin-left:auto;width:42px;height:42px;border-radius:50%;background:var(--ios-green);display:flex;align-items:center;justify-content:center}
+
+/* ---------- engine ---------- */
+.eng{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:2px 4px 6px;scrollbar-width:thin}
+.card{background:var(--cream);border-radius:18px;box-shadow:0 0 0 1px var(--line);padding:16px 18px}
+.mask{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.mask h2{font-family:var(--display);font-variation-settings:"SOFT" 85,"WONK" 0;font-weight:560;font-size:30px;letter-spacing:-.5px;margin:0;line-height:1.05}
+.mask .who{font-size:13.5px;color:var(--ink2);margin-top:6px;max-width:44ch;line-height:1.4}
+.mask .win{font-size:12px;color:var(--ink3);text-align:right;line-height:1.5}
+.mask .win b{display:block;font-family:var(--display);font-size:20px;color:var(--cocoa);font-weight:500}
+.rail{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:16px}
+.rail div{border-radius:10px;padding:9px 10px 8px;background:var(--vanilla);font-size:12.5px;font-weight:600;color:var(--ink3);position:relative;transition:background .3s,color .3s}
+.rail div small{display:block;font-weight:500;font-size:11px;margin-top:2px;opacity:.85}
+.rail div.done{background:var(--pist-soft);color:var(--pistachio)}
+.rail div.now{background:var(--cocoa);color:var(--vanilla)}
+.rail div.now.money{background:var(--ch-money)}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.scoreN{display:flex;align-items:baseline;gap:10px}
+.scoreN b{font-family:var(--display);font-variation-settings:"SOFT" 50;font-weight:500;font-size:64px;letter-spacing:-2px;line-height:.9;font-variant-numeric:tabular-nums}
+.state{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;padding:5px 10px;border-radius:999px;background:var(--pist-soft);color:var(--pistachio)}
+.state i{width:7px;height:7px;border-radius:50%;background:currentColor}
+.state.armed{background:#F4E4C4;color:#8A5A10}
+.state.held{background:var(--sorb-soft);color:var(--ch-money)}
+.lbl{font-size:11.5px;font-weight:600;letter-spacing:.9px;text-transform:uppercase;color:var(--ink3)}
+.ladder{display:grid;grid-template-columns:20fr 30fr 20fr 30fr;gap:3px;margin-top:14px;position:relative}
+.ladder span{height:8px;border-radius:4px;background:var(--vanilla);transition:background .4s}
+.ladder span.lit:nth-child(1){background:var(--pistachio)}
+.ladder span.lit:nth-child(2){background:#9DAE7E}
+.ladder span.lit:nth-child(3){background:#D9A55B}
+.ladder span.lit:nth-child(4){background:var(--sorbet)}
+.ladder .pin{position:absolute;top:-5px;width:3px;height:18px;border-radius:2px;background:var(--cocoa);transition:left .9s cubic-bezier(.3,.8,.3,1)}
+.ladderl{display:grid;grid-template-columns:20fr 30fr 20fr 30fr;gap:3px;margin-top:6px;font-size:11px;color:var(--ink3)}
+.ladderl span.on{color:var(--cocoa);font-weight:700}
+.chart{margin-top:10px}
+.chart svg{display:block;width:100%;height:auto}
+.line{display:flex;flex-direction:column}
+.line .q{font-family:var(--display);font-variation-settings:"SOFT" 90,"WONK" 1;font-weight:420;font-size:21px;line-height:1.3;margin-top:10px;flex:1;text-wrap:pretty}
+.line .q.none{color:var(--ink3);font-size:18px}
+.line .src{font-size:12.5px;color:var(--ink3);margin-top:8px}
+.hang{margin-top:12px;border:1.5px solid var(--cocoa);background:transparent;border-radius:12px;padding:10px 12px;font-weight:600;font-size:13.5px;text-align:center}
+.hang.set{background:var(--cocoa);color:var(--vanilla)}
+.feed{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.sig{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:start;padding:11px 12px;border-radius:12px;background:var(--vanilla);animation:fadein .4s ease}
+.sig.new{box-shadow:0 0 0 2px var(--cocoa) inset;background:#FFF6E9}
+.chip{font-size:10.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;padding:4px 7px;border-radius:6px;color:#fff;margin-top:1px}
+.chip.Phone{background:var(--ch-phone)}.chip.Message{background:var(--ch-msg)}.chip.Browser{background:var(--ch-browser)}.chip.App{background:var(--ch-app)}.chip.Money{background:var(--ch-money)}
+.sig .t{font-size:14px;line-height:1.35;font-weight:500}
+.sig .s{font-size:12px;color:var(--ink3);margin-top:3px;line-height:1.35;grid-column:2}
+.sig .m{font-size:12.5px;font-variant-numeric:tabular-nums;color:var(--ink2);white-space:nowrap;text-align:right}
+.sig .m b{color:var(--cocoa)}
+.sig .tm{font-size:11.5px;color:var(--ink3)}
+.empty{font-size:14px;color:var(--ink3);padding:10px 2px;line-height:1.45}
+.note2{font-size:15px;line-height:1.45;color:var(--cocoa)}
+.note2 b{font-weight:600}
+.decision{background:var(--cocoa);color:var(--vanilla);box-shadow:none}
+.decision .lbl{color:rgba(245,237,223,.6)}
+.decision .d{font-family:var(--display);font-variation-settings:"SOFT" 85;font-size:21px;line-height:1.3;margin-top:8px}
+.decision .d em{font-style:normal;color:var(--sorbet)}
+.decision .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.decision .stats div{background:rgba(245,237,223,.08);border-radius:10px;padding:10px 12px;font-size:12px;color:rgba(245,237,223,.7)}
+.decision .stats b{display:block;font-family:var(--display);font-size:22px;color:var(--vanilla);font-weight:500;margin-bottom:2px}
+.decision .room{margin-top:12px;font-size:14px;line-height:1.5;color:rgba(245,237,223,.85)}
+.decision .room small{display:block;color:rgba(245,237,223,.55);margin-top:4px;font-size:11.5px}
+.foot2{font-size:11.5px;color:var(--ink3);line-height:1.5;padding:0 4px}
+.foot2 b{color:var(--ink2);font-weight:600}
+
+/* ---------- numbers overlay ---------- */
+.ov{position:fixed;inset:0;background:rgba(36,28,23,.5);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px max(16px,env(safe-area-inset-right,0px)) 20px max(16px,env(safe-area-inset-left,0px))}
+.ovp{background:var(--vanilla);border-radius:24px;max-width:980px;width:100%;max-height:100%;overflow-y:auto;padding:30px 34px 26px;position:relative}
+.ovp h3{font-family:var(--display);font-variation-settings:"SOFT" 85;font-weight:560;font-size:36px;letter-spacing:-.6px;margin:0;line-height:1.08;text-wrap:balance}
+.ovp .lede{font-size:16px;color:var(--ink2);margin-top:10px;max-width:62ch;line-height:1.5}
+.nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:22px}
+.num{background:var(--cream);border-radius:16px;box-shadow:0 0 0 1px var(--line);padding:16px 18px}
+.num b{display:block;font-family:var(--display);font-variation-settings:"SOFT" 50;font-weight:500;font-size:40px;letter-spacing:-1px;line-height:1}
+.num p{margin:8px 0 0;font-size:14px;line-height:1.45}
+.num small{display:block;margin-top:6px;font-size:11.5px;color:var(--ink3)}
+.masktbl{margin-top:14px;overflow-x:auto}
+.masktbl table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+.masktbl th{text-align:left;font-size:11.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line)}
+.masktbl td{padding:9px 10px;border-bottom:1px solid var(--line)}
+.masktbl td:not(:first-child),.masktbl th:not(:first-child){text-align:right}
+.ovp .src{font-size:12px;color:var(--ink3);margin-top:14px;line-height:1.55}
+.ovp .x{position:absolute;right:18px;top:18px;width:38px;height:38px;border-radius:50%;border:none;background:var(--cream);box-shadow:0 0 0 1px var(--line) inset;font-size:20px}
+.keys{position:fixed;left:max(20px,env(safe-area-inset-left,0px));bottom:10px;font-size:11px;color:var(--ink3);display:none}
+
+/* ---------- narrow: tabs ---------- */
+@media (max-width:1099px){
+  body{overflow:auto}
+  .top{height:auto;flex-wrap:wrap;padding-block:10px;gap:10px}
+  .masks{order:3;flex-basis:100%}
+  .brand .wm{font-size:19px}
+  .ctl{margin-left:auto}
+  .ctl .lbtxt{display:none}
+  .stage{display:block;height:auto;padding-top:10px}
+  .tabs{display:flex;gap:6px;margin-bottom:12px}
+  .tabs button{flex:1;border:1px solid var(--line);background:transparent;border-radius:12px;padding:9px 6px;font-size:13px;font-weight:600;color:var(--ink2)}
+  .tabs button.on{background:var(--cream);color:var(--cocoa);box-shadow:0 0 0 1.5px var(--cocoa) inset}
+  .pane{display:none}
+  .pane.on{display:flex}
+  .pane .cap{display:none}
+  .slot{height:min(calc(100vh - 170px), calc((100vw - 32px) * 2.1));min-height:420px}
+  .eng{overflow:visible}
+  .row2{grid-template-columns:minmax(0,1fr)}
+  .nums{grid-template-columns:minmax(0,1fr)}
+  .ovp{padding:24px 20px}
+  .ovp h3{font-size:28px}
+}
+@media (min-width:1100px){ .keys{display:block} }
+@media (max-width:520px){ .decision .stats{grid-template-columns:minmax(0,1fr)} .mask h2{font-size:26px} }
+</style>
+
+</head><body><header class="top">
+  <div class="brand"><span id="brandmk"></span><span class="wm">Ice Cream Security</span></div>
+  <nav class="masks" id="masks" aria-label="Scenarios"></nav>
+  <div class="ctl">
+    <button id="bPlay" class="pri" aria-label="Play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg><span class="lbtxt">Play</span></button>
+    <button id="bNext" aria-label="Next step"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button id="bReset" aria-label="Restart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 12a8 8 0 108-8H8"/><path d="M8 1v6h6" transform="translate(-3 -1)"/></svg></button>
+    <button id="bVoice" class="tog on" aria-label="Voice on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 010 7"/></svg><span class="lbtxt">Voice</span></button>
+    <button id="bNums"><span>The numbers</span></button>
+  </div>
+</header>
+
+<main class="stage" id="stage">
+  <div class="tabs" id="tabs">
+    <button data-p="pA" class="on" id="tabA">Ray's iPhone</button>
+    <button data-p="pE">The engine</button>
+    <button data-p="pB" id="tabB">Sarah's iPhone</button>
+  </div>
+  <section class="pane on" id="pA">
+    <div class="cap"><span id="capA">Ray's iPhone</span><span>Protected person</span></div>
+    <div class="slot"><div class="pwrap"><div class="phone"><div class="screen" id="scrA"></div></div></div></div>
+  </section>
+  <section class="pane" id="pE">
+    <div class="cap"><span>The engine</span><span>What Ice Cream Security sees</span></div>
+    <div class="eng" id="eng">
+      <div class="card">
+        <div class="mask">
+          <div><h2 id="eMask">Tech support</h2><div class="who" id="eWho"></div></div>
+          <div class="win">Signal window<b id="eWin">0 min</b></div>
+        </div>
+        <div class="rail" id="eRail"></div>
+      </div>
+      <div class="row2">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="lbl">Sequence score</span><span class="state" id="eState"><i></i><span>Watching</span></span></div>
+          <div class="scoreN" style="margin-top:10px"><b id="eScore">0</b><span style="font-size:13px;color:var(--ink3)">of 100</span></div>
+          <div class="ladder" id="eLadder"><span></span><span></span><span></span><span></span><div class="pin" id="ePin" style="left:0"></div></div>
+          <div class="ladderl" id="eLadL"><span>Watch</span><span>Ask</span><span>Name it, delay</span><span>Hold, call family</span></div>
+          <div class="chart" id="eChart"></div>
+        </div>
+        <div class="card line">
+          <span class="lbl" id="eLineL">On the line</span>
+          <div class="q none" id="eLine">Nobody yet.</div>
+          <div class="src" id="eLineS"></div>
+          <button class="hang" id="bHang">Where would you hang up? Tap here.</button>
+        </div>
+      </div>
+      <div class="card decision" id="eDec" hidden></div>
+      <div class="card" id="eNoteCard"><div class="note2" id="eNote"></div></div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;gap:8px"><span class="lbl">Signals, in the order they arrived</span><span class="lbl" style="color:var(--ink3)">weight × mix</span></div>
+        <div class="feed" id="eFeed"></div>
+      </div>
+      <div class="foot2"><b>Why the score jumps.</b> Each signal alone is noise. Different kinds of signal multiply rather than add: one kind ×1.0, two ×1.6, three ×2.1, four ×2.3. Ice Cream Security never interrupts on the score alone. It waits for the money move, the last reversible point, and the score decides how hard to step in. Weights shown are illustrative, to be tuned on labeled scam data.<br><br><b>Presenter keys.</b> Space plays or pauses, right arrow steps, R restarts, 1 to 5 pick a scenario, N opens the numbers. <span id="vName"></span></div>
+    </div>
+  </section>
+  <section class="pane" id="pB">
+    <div class="cap"><span id="capB">Sarah's iPhone</span><span>Trusted person</span></div>
+    <div class="slot"><div class="pwrap"><div class="phone"><div class="screen" id="scrB"></div></div></div></div>
+  </section>
+</main>
+
+<div class="ov" id="ov" hidden>
+  <div class="ovp" role="dialog" aria-labelledby="ovh">
+    <button class="x" id="ovx" aria-label="Close">×</button>
+    <div class="lbl" style="color:var(--ch-money)">Why now</div>
+    <h3 id="ovh" style="margin-top:8px">Romance, crypto and tech support are one sequence wearing three masks.</h3>
+    <p class="lede">Each one ends the same way: the victim moves the money with their own hands while someone guides them. Investment fraud is where the other masks cash out, which is why it is nearly half of all fraud losses.</p>
+    <div class="nums">
+      <div class="num"><b>$20.9B</b><p>reported to the FBI in 2025, up 26% from $16.6B in 2024.</p><small>IC3 2025 Annual Report, pp. 4, 6</small></div>
+      <div class="num"><b>49%</b><p>of cyber enabled fraud losses were investment fraud, $8.65B of $17.70B.</p><small>IC3 2025, pp. 8 to 9</small></div>
+      <div class="num"><b>78%</b><p>of 3,780 crypto investment victims the FBI contacted did not know they were being scammed.</p><small>Operation Level Up, IC3 2025, p. 20</small></div>
+      <div class="num"><b>58%</b><p>of $1.16B in attempted theft was frozen when reported fast through the Financial Fraud Kill Chain.</p><small>IC3 2025, p. 17</small></div>
+      <div class="num"><b>$893M</b><p>in losses tied to AI in the first year IC3 tracked it. A floor, and directional only.</p><small>IC3 2025, pp. 39, 42</small></div>
+      <div class="num"><b>4.8%</b><p>of fraud victims complained to a government agency or the Better Business Bureau. Every figure here is a floor.</p><small>K. Anderson, FTC Bureau of Economics, 2021, from FTC fraud surveys</small></div>
+    </div>
+    <div class="masktbl">
+      <table>
+        <thead><tr><th>The masks, all ages</th><th>2025 losses</th><th>Change</th><th>Complaints</th><th>Change</th></tr></thead>
+        <tbody>
+          <tr><td>Investment</td><td>$8.649B</td><td>up 32%</td><td>72,984</td><td>up 52%</td></tr>
+          <tr><td>Tech and customer support</td><td>$2.135B</td><td>up 46%</td><td>47,794</td><td>up 33%</td></tr>
+          <tr><td>Confidence and romance</td><td>$929M</td><td>up 38%</td><td>23,159</td><td>up 29%</td></tr>
+          <tr><td>Government impersonation</td><td>$798M</td><td>up 97%</td><td>32,424</td><td>up 87%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="src">Source: Federal Bureau of Investigation, Internet Crime Complaint Center, 2025 IC3 Annual Report, released April 7, 2026. IC3 figures are self reported complaints and are a floor on true harm. Year over year changes are calculated from the report's three year tables, pp. 25 to 26. The FTC Consumer Sentinel total for 2025 (about $16B) is a separate system and is not added to these figures.</div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ============ brand ============ */
+function mark(cup, scoop){ cup=cup||"#241C17"; scoop=scoop||"#4A6350";
+  return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M21 54 H79 C80.8 54 82.2 55.6 82 57.4 L77.3 88.6 C76.6 93.2 72.6 96.6 68 96.6 H32 C27.4 96.6 23.4 93.2 22.7 88.6 L18 57.4 C17.8 55.6 19.2 54 21 54 Z" fill="'+cup+'"/><circle cx="50" cy="31" r="27" fill="'+scoop+'"/></svg>'; }
+document.getElementById("brandmk").innerHTML = mark();
+
+/* ============ scenarios ============ */
+var MULT=[0,1,1.6,2.1,2.3,2.4];
+var STAGES=[["First contact","the opener"],["Trust","the story"],["Isolation","cut off help"],["Money move","last reversible point"]];
+var SRC={
+  Phone:"Android call state. On iPhone, a tap on “someone is on the phone” or the carrier label.",
+  Message:"iPhone unknown sender filter. Android notification, read on device only.",
+  Browser:"Ice Cream Security browser extension and DNS layer.",
+  App:"Mac Endpoint Security, Windows event tracing, Android accessibility.",
+  Money:"Bank or wallet partner signal, seen before the money settles."
+};
+var SC={
+ tech:{ tab:"Tech support", mask:"Tech support", person:"Ray", contact:{n:"Sarah",rel:"daughter",i:"S"},
+  who:"Ray is a retired engineer who would tell you, sincerely, that he would never fall for this. His trusted person is his daughter, Sarah.",
+  devices:"your iPhone and your MacBook", ruleN:"3 rules, written March 4",
+  rule:"I will never move money because someone called me first.", ruleDate:"Ray, March 4, 2026",
+  q:"Is someone on the phone with you right now telling you <em>not to tell your bank?</em>", qs:"If so, this is a scam. You are not in trouble, and nothing has been sent.",
+  qSay:"Ray, it's Ice Cream Security. Is someone on the phone with you right now, telling you not to tell your bank?",
+  distance:"If Sarah told you a man on the phone wanted her to move her savings, what would you tell her?", dOpts:["Hang up and call me","Do what he says"],
+  amount:"$24,000", hold:"Held until Sarah says go, or 24 hours", holdSec:86400,
+  fact:"Real support teams and real banks never ask you to move money to keep it safe.",
+  kind:"call", winLabel:"41 min", firstToHold:"41 min", saved:"$24,000",
+  steps:[
+   {time:"9:58",stamp:"9:58 AM",stage:-1,screen:{t:"home"},line:null,dur:4200,
+    note:"<b>A calm morning.</b> Ice Cream Security has said nothing all week. Quiet is the product working."},
+   {time:"10:02",stamp:"10:02 AM",stage:0,screen:{t:"call",name:"Security Center",sub:"(800) 555 0142",sec:41},
+    line:{who:"The caller",t:"Hi Ray, this is Daniel on the security team. We detected someone signing in to your account from overseas."},
+    sig:{ch:"Phone",t:"Inbound call from an unknown number, not in contacts",w:22},dur:5600,
+    note:"<b>First contact.</b> An unknown call is noise. Most of them are. The engine notes it and says nothing."},
+   {time:"10:09",stamp:"10:09 AM",stage:1,screen:{t:"web",url:"maccaresupportnow.com",page:"support"},
+    line:{who:"The caller",t:"I'm sending you to our secure page so you can see your case number. Type it exactly as I say."},
+    sig:{ch:"Browser",t:"Support site registered 6 days ago, scam page pattern, while the call is live",w:12},dur:5600,
+    note:"<b>Trust.</b> A brand new support site during an open call. Two kinds of signal now, so they multiply."},
+   {time:"10:16",stamp:"10:16 AM",stage:1,screen:{t:"web",url:"maccaresupportnow.com",page:"support",alert:true},
+    line:{who:"The caller",t:"I need to see your screen to remove the hacker. Tap Allow when it pops up."},
+    sig:{ch:"App",t:"Screen sharing app installed and given control, 14 minutes into the call",w:13},dur:6000,
+    note:"<b>Remote control inside the call window.</b> Three kinds of signal, in scam order. This is the signature."},
+   {time:"10:31",stamp:"10:31 AM",stage:2,screen:{t:"call",name:"Security Center",sub:"(800) 555 0142",sec:1752},
+    line:{who:"The caller",t:"Don't hang up, and don't call your bank. The people who did this work inside the bank."},
+    sig:{ch:"Phone",t:"Call still active at 29 minutes, screen still shared",w:3},dur:6000,
+    note:"<b>Isolation.</b> The score is past 70, so Ice Cream Security arms. It still does not interrupt. Ray has done nothing irreversible yet."},
+   {time:"10:43",stamp:"10:43 AM",stage:3,screen:{t:"bank",amt:"$24,000",from:"Savings",fromSub:"•• 4471, $61,240.18",to:"Secure Holding Account",toSub:"Added 4 minutes ago"},
+    line:{who:"The caller",t:"Move your savings into the protected account now. I'll stay on the line with you the whole time."},
+    sig:{ch:"Money",t:"$24,000 to a payee added 4 minutes ago, while the screen is shared",w:6},dur:5200,
+    note:"<b>The money move.</b> This is the last point where any of it is reversible, and the score is 89. That earns the strongest response."}
+  ]},
+ romance:{ tab:"Romance to crypto", mask:"Romance to crypto", person:"Jordan", contact:{n:"Linda",rel:"mom",i:"L"},
+  who:"Jordan is a nurse, smart, busy, and lonely after a move. Her trusted person is her mom, Linda. Same engine, same four stages, stretched over three weeks.",
+  devices:"your iPhone", ruleN:"2 rules, written January 12",
+  rule:"I don't send money to anyone I haven't met in person.", ruleDate:"Jordan, January 12, 2026",
+  q:"Has someone you have <em>only met online</em> asked you to send this?", qs:"If so, this is a scam, and it is not your fault. Nothing has been sent.",
+  qSay:"Jordan, it's Ice Cream Security. Has someone you've only met online asked you to send this?",
+  distance:"If your best friend told you someone she met by text was teaching her to trade gold, what would you tell her?", dOpts:["Stop and talk to me first","Go for it"],
+  amount:"$18,500", hold:"Held until Linda says go, or 48 hours", holdSec:172800,
+  fact:"A real investment never makes you pay a tax before you can take your money out.",
+  kind:"transfer", winLabel:"23 days", firstToHold:"23 days", saved:"$18,500",
+  steps:[
+   {time:"7:10",stamp:"Oct 1, 7:10 PM",stage:-1,screen:{t:"home"},line:null,dur:4200,
+    note:"<b>Jordan set this up with her mom in January.</b> It has been quiet since. She forgets it is there."},
+   {time:"7:14",stamp:"Oct 1, 7:14 PM",stage:0,screen:{t:"msg",name:"+1 (628) 555 0199",ini:"?",day:"Today 7:14 PM",bub:[["Hi Amy! Are we still on for dinner Saturday?",0],["Sorry, wrong number!",1],["Oh how embarrassing. You seem kind though. I'm Mei.",0]]},
+    line:{who:"Text, unknown sender",t:"Hi Amy! Are we still on for dinner Saturday?"},
+    sig:{ch:"Message",t:"Wrong number opener from an unknown sender",w:10},dur:5600,
+    note:"<b>First contact.</b> The most common opener there is. On its own it means nothing, and the engine treats it that way."},
+   {time:"9:30",stamp:"Oct 10, 9:30 PM",stage:1,screen:{t:"msg",name:"Mei",ini:"M",app:"chat",day:"Day 10",bub:[["Good morning! Did you sleep well? I dreamed about the beach we talked about",0],["Haha yes! Long shift today",1],["Look, my uncle taught me gold trading. I made $41,000 this month",0],["chart",0]]},
+    line:{who:"Mei",t:"Texting keeps glitching, let's talk on here. Look, my uncle taught me gold trading. I made $41,000 this month."},
+    sig:{ch:"Message",t:"Conversation moved to a new chat app, daily for 9 days",w:8},dur:5600,
+    note:"<b>Trust.</b> Same kind of signal, so the score barely moves. Patience is the scammer's tool, and the engine is patient too."},
+   {time:"8:05",stamp:"Oct 17, 8:05 PM",stage:1,screen:{t:"web",url:"aurumxtrade.com",page:"trade"},
+    line:{who:"Mei",t:"Start small. Just $2,000 and watch it grow. I'll show you every step."},
+    sig:{ch:"Browser",t:"Trading site registered 19 days ago, not a licensed exchange",w:12},dur:5600,
+    note:"<b>A new kind of signal joins the story.</b> The fake profits look real. Now the signals multiply."},
+   {time:"10:40",stamp:"Oct 22, 10:40 PM",stage:2,screen:{t:"msg",name:"Mei",ini:"M",app:"chat",day:"Day 22",bub:[["You're up $43,000!! I'm so proud of you",0],["I want to tell my mom",1],["Don't tell your family yet. They'll say it's too risky and you'll miss the window. Surprise them when you're rich",0]]},
+    line:{who:"Mei",t:"Don't tell your family yet. They'll say it's too risky. Surprise them when you're rich."},
+    sig:{ch:"App",t:"Crypto wallet app installed for the first time",w:12},dur:6000,
+    note:"<b>Isolation.</b> Secrecy is the tell, and the new wallet is the setup for the money move."},
+   {time:"9:12",stamp:"Oct 23, 9:12 PM",stage:3,screen:{t:"wallet",amt:"$18,500",to:"0x7f3a 91c2 e44b 08d1",toSub:"Never used before"},
+    line:{who:"Mei",t:"Your account is worth $61,000! To withdraw, the platform needs the 30% tax paid first. Hurry, the window closes tonight."},
+    sig:{ch:"Money",t:"$18,500 to a wallet never used before, 9 times her largest transfer",w:12},dur:5200,
+    note:"<b>Taxes and fees.</b> The FBI describes this exact step as where crypto investment scams cash out. Score 90 at the money move."}
+  ]},
+ imp:{ tab:"Impersonation", mask:"Bank impersonation", person:"Dana", contact:{n:"Chris",rel:"husband",i:"C"},
+  who:"Dana runs a small business and handles the money. Her trusted person is her husband, Chris. This mask coaches the victim to lie to the bank.",
+  devices:"your iPhone and your MacBook", ruleN:"3 rules, written March 4",
+  rule:"My bank will never ask me to move money to keep it safe.", ruleDate:"Dana, March 4, 2026",
+  q:"Is someone on the phone right now telling you <em>not to tell your bank</em> why you are moving this money?", qs:"If so, this is a scam. Your bank will never ask you to do this.",
+  qSay:"Dana, it's Ice Cream Security. Is someone on the phone right now telling you not to tell your bank why you are moving this money?",
+  distance:"If Chris got this call, what would you tell him to do?", dOpts:["Hang up and call the bank","Do what Kevin says"],
+  amount:"$46,000", hold:"Held until Chris says go, or 24 hours", holdSec:86400,
+  fact:"Your bank will never ask you to move money into a safe account.",
+  kind:"call", winLabel:"21 min", firstToHold:"21 min", saved:"$46,000",
+  steps:[
+   {time:"1:55",stamp:"1:55 PM",stage:-1,screen:{t:"home"},line:null,dur:4200,
+    note:"<b>A normal workday.</b> Ice Cream Security is on Dana's phone and laptop and has nothing to say."},
+   {time:"2:03",stamp:"2:03 PM",stage:0,screen:{t:"msg",name:"72166",ini:"#",day:"Today 2:03 PM",bub:[["FRAUD ALERT: Did you approve a $1,240 purchase in Miami, FL? Reply YES or NO.",0],["NO",1],["Thank you. A fraud specialist will call you shortly to secure your account.",0]]},
+    line:{who:"Text",t:"FRAUD ALERT: Did you approve a $1,240 purchase in Miami? Reply YES or NO."},
+    sig:{ch:"Message",t:"Bank style alert from a sender her bank does not use",w:8},dur:5600,
+    note:"<b>First contact.</b> It looks exactly like a real alert. On its own, no product should touch it."},
+   {time:"2:05",stamp:"2:05 PM",stage:1,screen:{t:"call",name:"Fraud Department",sub:"Caller ID shows your bank",sec:112},
+    line:{who:"The caller",t:"This is Kevin in fraud prevention. To verify you, I'm sending a code. Please read it back to me."},
+    sig:{ch:"Phone",t:"Call 2 minutes after the text, caller ID claims to be the bank",w:16},dur:5600,
+    note:"<b>Trust.</b> Text, then call, inside two minutes. The order is the pattern."},
+   {time:"2:11",stamp:"2:11 PM",stage:2,screen:{t:"call",name:"Fraud Department",sub:"Caller ID shows your bank",sec:500,code:true},
+    line:{who:"The caller",t:"Someone at your branch is involved. Don't tell anyone at the bank. If they ask, say it's for a home renovation."},
+    sig:{ch:"Message",t:"One time code arrived while the call was live",w:14},dur:6200,
+    note:"<b>Isolation.</b> This line is why bank warnings fail. The scammer has already prepared her for the teller and for the pop up."},
+   {time:"2:24",stamp:"2:24 PM",stage:3,screen:{t:"bank",amt:"$46,000",from:"Business checking",fromSub:"•• 2210, $83,905.40",to:"Safe Account Services",toSub:"Added during this call",wire:true},
+    line:{who:"The caller",t:"Wire it to the safe account now, before they drain it. I'll stay on with you."},
+    sig:{ch:"Money",t:"$46,000 wire to a payee added during the call, largest in 3 years",w:16},dur:5200,
+    note:"<b>The money move.</b> She has a coached answer ready for the teller. She has no answer ready for the one question that describes the scammer's own script."}
+  ]},
+ gov:{ tab:"Cash at the door", mask:"Government impersonation", person:"Carol", contact:{n:"Michael",rel:"son",i:"M"},
+  who:"Carol is a retired teacher who forwards scam warnings to her friends. Her trusted person is her son, Michael. This mask ends in cash handed over at the door, so there is no transfer for anyone to hold.",
+  devices:"your iPhone", ruleN:"3 rules, written April 9",
+  rule:"Anyone who calls me asking for money, I add Ice Cream Security to the call.", ruleDate:"Carol, April 9, 2026",
+  q:"Is the caller <em>asking you for money?</em>", qs:"",
+  qSay:"Carol, it's Ice Cream Security. Is the caller asking you for money? Tap once and we will join the call.",
+  amount:"$38,000", fact:"Nobody from Social Security will ever ask you for cash, gift cards, or crypto.",
+  kind:"sos", winLabel:"23 min", firstToHold:"23 min", saved:"$38,000",
+  steps:[
+   {time:"3:02",stamp:"3:02 PM",stage:-1,screen:{t:"home"},line:null,dur:4200,
+    note:"<b>An ordinary Tuesday.</b> Carol wrote three rules with her son in April. The first one is about phone calls and money."},
+   {time:"3:04",stamp:"3:04 PM",stage:0,screen:{t:"call",name:"Social Security Admin",sub:"(202) 555 0118",sec:38},
+    line:{who:"The caller",t:"Mrs. Hale, this is Agent Martin Reyes, Social Security Office of Inspector General. Your number was used to open bank accounts in Texas tied to drug trafficking."},
+    sig:{ch:"Phone",t:"Inbound call from an unknown number, caller ID claims a government agency",w:18},dur:6000,
+    note:"<b>First contact.</b> Government impersonation losses nearly doubled in 2025. On its own, an unknown call is still noise."},
+   {time:"3:09",stamp:"3:09 PM",stage:1,screen:{t:"msg",name:"+1 (202) 555 0174",ini:"?",day:"Today 3:09 PM",bub:[["notice",0],["This is the case notice Agent Reyes described. Do not share it. It is a federal document.",0]]},
+    line:{who:"The caller",t:"I'm texting you the case notice now. Read me the case number so I know you have it."},
+    sig:{ch:"Message",t:"Official looking document image from an unknown number while the call is live",w:10},dur:5600,
+    note:"<b>Trust.</b> A text that lands during the call, sent to prove the call is real. Two kinds of signal now, so they multiply."},
+   {time:"3:21",stamp:"3:21 PM",stage:2,screen:{t:"acct",rows:[["Savings •• 8820","$52,316.40"],["Checking •• 1937","$3,208.11"]]},
+    line:{who:"The caller",t:"Check your balances while I hold. Don't call your bank and don't tell your son. Anyone you tell can be charged with obstruction."},
+    sig:{ch:"App",t:"Banking app opened mid call, balances checked twice in 4 minutes",w:12},dur:6200,
+    note:"<b>Isolation.</b> The secrecy order is the tell, and the bank app opening mid call is the first sign the money is in play."},
+   {time:"3:27",stamp:"3:27 PM",stage:3,screen:{t:"call",name:"Social Security Admin",sub:"(202) 555 0118",sec:1386},
+    line:{who:"The caller",t:"Withdraw $38,000 in cash today to protect it. A federal courier will come to your door at five to hold it as evidence."},
+    sig:{ch:"Phone",t:"Call passes 23 minutes with the banking app open, no payment started",w:8},dur:5800,
+    note:"<b>The money move, with nothing to hold.</b> Cash leaves no payment for a bank to stop. The only interrupt point left is the call itself, and the score is 76."}
+  ]},
+ normal:{ tab:"A normal day", mask:"A normal day", person:"Ray", contact:{n:"Sarah",rel:"daughter",i:"S"},
+  who:"Same Ray, same bank, same kind of transfer to a new payee. No call, no new website, no stranger on the screen.",
+  devices:"your iPhone and your MacBook", ruleN:"3 rules, written March 4",
+  q:"Quick check. Is anyone on the phone guiding you through this payment right now?",
+  kind:"light", winLabel:"1 min", firstToHold:"1 tap", saved:"",
+  steps:[
+   {time:"11:20",stamp:"11:20 AM",stage:-1,screen:{t:"home"},line:null,dur:3800,
+    note:"<b>The false positive test.</b> If this product punishes a normal day, people turn it off. So here is a normal day."},
+   {time:"11:24",stamp:"11:24 AM",stage:3,screen:{t:"bank",amt:"$4,200",from:"Checking",fromSub:"•• 3318, $9,412.77",to:"Pine Hill Roofing",toSub:"New payee"},
+    line:null, sig:{ch:"Money",t:"$4,200 to a new payee, no call, no screen sharing, no new site",w:22},dur:4800,
+    note:"<b>One signal, no sequence.</b> The score is 22. That earns one light question and nothing else."}
+  ]}
+};
+var ORDER=["tech","romance","imp","gov","normal"];
+var NOTICE='<div class="b img"><svg width="200" height="150" viewBox="0 0 200 150"><rect width="200" height="150" rx="12" fill="#F4F1EA"/><circle cx="28" cy="28" r="14" fill="none" stroke="#1F3A5F" stroke-width="2.5"/><circle cx="28" cy="28" r="7" fill="#1F3A5F"/><text x="50" y="25" font-size="10.5" font-weight="700" fill="#1F3A5F" font-family="Georgia,serif">FEDERAL CASE NOTICE</text><text x="50" y="38" font-size="8.5" fill="#555" font-family="Helvetica">Case 26 CR 4471, Inspector General</text><rect x="16" y="56" width="168" height="5" rx="2" fill="#CFC8BA"/><rect x="16" y="68" width="150" height="5" rx="2" fill="#CFC8BA"/><rect x="16" y="80" width="160" height="5" rx="2" fill="#CFC8BA"/><rect x="16" y="92" width="120" height="5" rx="2" fill="#CFC8BA"/><g transform="rotate(-8 140 122)"><rect x="96" y="108" width="92" height="26" rx="4" fill="none" stroke="#B3261E" stroke-width="2.5"/><text x="142" y="126" font-size="11" font-weight="800" fill="#B3261E" text-anchor="middle" font-family="Helvetica">CONFIDENTIAL</text></g></svg></div>';
+var SOS_ATT="This is Ice Cream Security. This call is being recorded. Carol asked us to join before any payment. Please give me your full name, your agency, and a number where I can call you back.";
+var SOS_GRACE="Carol, this is Grace with Ice Cream Security. You did exactly the right thing. Nobody from Social Security will ever ask you for cash. Can I add Michael to this call?";
+var INT={
+  call:["pause","ask","words","distance","hold","calling"],
+  transfer:["pausetx","ask","words","distance","hold","calling"],
+  light:["light","sent"],
+  sos:["sosask","ring","conf","gone","human","safe"]
+};
+var INTDUR={sosask:5800,ring:3800,conf:8200,gone:5400,human:7800,safe:6000,pause:4400,pausetx:4000,ask:6200,words:5200,distance:6000,hold:6500,calling:7000,light:5200,sent:4500};
+
+/* ============ state ============ */
+var S={k:"tech",i:0,phase:"scam",ii:0,score:0,shown:0,ch:{},sigs:[],hist:[],playing:false,hang:null,voice:true,done:false};
+var timer=null, tickers=[];
+var $=function(id){return document.getElementById(id)};
+
+/* ============ helpers ============ */
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;")}
+function sc(){return SC[S.k]}
+function step(){return sc().steps[S.i]}
+function clearTickers(){tickers.forEach(clearInterval);tickers=[]}
+function fmtDur(s){var m=Math.floor(s/60),x=s%60;return m+":"+(x<10?"0":"")+x}
+function fmtHMS(s){var h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h<10?"0":"")+h+":"+(m<10?"0":"")+m+":"+(x<10?"0":"")+x}
+var IC={
+ sig:'<svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>',
+ wifi:'<svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 2.2c2.4 0 4.6.9 6.3 2.5l1.2-1.3C13.4 1.4 10.8.4 8 .4S2.6 1.4.5 3.4l1.2 1.3C3.4 3.1 5.6 2.2 8 2.2zm0 3.5c1.5 0 2.8.5 3.9 1.5l1.2-1.3C11.7 4.6 9.9 3.9 8 3.9s-3.7.7-5.1 2l1.2 1.3C5.2 6.2 6.5 5.7 8 5.7zM8 9.2l2-2.1c-.6-.5-1.3-.8-2-.8s-1.4.3-2 .8z"/></svg>',
+ bat:'<svg width="27" height="13" viewBox="0 0 27 13" fill="none"><rect x=".5" y=".5" width="23" height="12" rx="3.5" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="18" height="9" rx="2" fill="currentColor"/><rect x="24.5" y="4.5" width="1.6" height="4" rx=".8" fill="currentColor" opacity=".4"/></svg>',
+ lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7.5a4 4 0 018 0V10"/></svg>',
+ check:'<svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#4A6350" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.7l5 5L20 6.7"/></svg>',
+ phone:'<svg viewBox="0 0 24 24" fill="#fff"><path d="M6.6 10.8a15.1 15.1 0 006.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 013 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg>'
+};
+function sbar(time,dark){return '<div class="sbar'+(dark?" dark":"")+'"><span>'+time+'</span><span class="ico">'+IC.sig+IC.wifi+IC.bat+'</span></div>'}
+function anav(txt,light){return '<div class="anav">'+(light?mark("#F5EDDF","#EC8468"):mark())+'<span>'+(txt||"Ice Cream Security")+'</span></div>'}
+
+/* ============ phone A screens ============ */
+function scrA(spec){
+  var s=sc(), st=step(), t=st?st.time:"9:41", h="";
+  var dark=false, light=false;
+  switch(spec.t){
+  case "home":
+    h='<div class="view ics">'+anav()+'<h1>Today</h1><div class="calmdisc">'+IC.check+'</div><div class="hl">Everything looks normal</div><div class="sub">Ice Cream Security is watching '+s.devices+'.</div>'+
+      '<div class="hdr">If something feels wrong</div><div class="grp"><div class="r"><span class="av">'+s.contact.i+'</span><span><span class="t1">'+s.contact.n+'</span><span class="t2">Your trusted person</span></span></div><div class="r"><span class="av" style="background:var(--vanilla);color:var(--cocoa)">“</span><span><span class="t1">Your rules</span><span class="t2">'+s.ruleN+'</span></span></div><div class="r"><span class="av icsav">'+mark("#F5EDDF","#EC8468")+'</span><span><span class="t1">Ice Cream Security help</span><span class="t2">Answers on the first ring, day or night</span></span></div></div>'+
+      '<div class="foot"><button class="abtn">Add Ice Cream Security to a call</button></div></div>';
+    break;
+  case "call":
+    dark=true; light=true;
+    h='<div class="view call"><div class="who"><div class="nm">'+esc(spec.name)+'</div><div class="sb">'+esc(spec.sub)+'</div><div class="du" data-call="'+spec.sec+'">'+fmtDur(spec.sec)+'</div></div>'+
+      (spec.code?'<div class="note" style="position:absolute;top:58px;left:10px;right:10px;z-index:20"><div class="ic" style="background:#34C759"><svg viewBox="0 0 24 24" width="24" height="24" fill="#fff"><path d="M12 3C6.5 3 2 6.6 2 11c0 2.5 1.4 4.7 3.7 6.2L5 21l4.1-2.3c.9.2 1.9.3 2.9.3 5.5 0 10-3.6 10-8s-4.5-8-10-8z"/></svg></div><div style="flex:1"><div class="hd">Messages<span>now</span></div><div class="bd">Your verification code is 482 913. Never share this code with anyone.</div></div></div>':'')+
+      '<div class="pad">'+["mute","keypad","audio","add call","FaceTime","contacts"].map(function(x){return '<div><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><circle cx="12" cy="12" r="6"/></svg></i>'+x+'</div>'}).join("")+'</div>'+
+      '<div class="end"><svg width="34" height="34" viewBox="0 0 24 24" fill="#fff" style="transform:rotate(135deg)"><path d="M6.6 10.8a15.1 15.1 0 006.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 013 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg></div></div>';
+    break;
+  case "msg":
+    var bub=spec.bub.map(function(b){ if(b[0]==="notice") return NOTICE; if(b[0]==="chart") return '<div class="b img"><svg width="190" height="110" viewBox="0 0 190 110"><rect width="190" height="110" rx="12" fill="#0F1F17"/><polyline points="12,92 40,80 62,84 88,60 110,64 134,38 160,30 178,16" fill="none" stroke="#3DDC84" stroke-width="3"/><text x="12" y="22" fill="#9FE8BE" font-size="12" font-family="Helvetica">+$41,206.50</text></svg></div>';
+      return '<div class="b'+(b[1]?" me":"")+'">'+esc(b[0])+'</div>'}).join("");
+    h='<div class="view msg"><div class="mh"><div class="av">'+esc(spec.ini)+'</div><div class="n">'+esc(spec.name)+(spec.app?' · Chat':'')+'</div></div><div class="ms"><div class="day">'+esc(spec.day)+'</div>'+bub+'</div><div class="inp">'+(spec.app?"Message":"iMessage")+'</div></div>';
+    break;
+  case "web":
+    var pg = spec.page==="support"
+      ? '<div class="fake1"><div class="lg">MacCare Support Center</div><div class="bad">3 critical threats found. Do not restart your computer.</div><div class="cs">Case 48213 is open.<br>Your technician: Daniel<br>Stay on the line with your technician.</div><div class="bt">Connect to technician</div></div><div style="padding:18px 20px;font-size:15px;color:#555;line-height:1.5">Certified support for your devices. Our technicians are available now to remove viruses and secure your accounts.</div>'
+      : '<div class="fake2"><div class="lg">AURUMX TRADE</div><div style="font-size:14px;color:#6B7280;margin-top:4px">Gold and digital asset desk</div><div class="bal">$14,180.22</div><div class="up">+$2,180.22 this week</div><svg viewBox="0 0 340 120" style="width:100%;margin-top:14px"><polyline points="0,100 40,92 80,96 120,72 160,76 200,50 240,54 280,30 340,14" fill="none" stroke="#A07A12" stroke-width="3"/></svg><div class="bt">Deposit</div><div style="font-size:13px;color:#9CA3AF;margin-top:12px;text-align:center">Trusted by 1.2 million traders</div></div>';
+    h='<div class="view web"><div class="pg">'+pg+'</div>'+(spec.alert?'<div class="dim"></div><div class="sheetalert"><div class="tt">“SupportView” would like to control this device</div><div class="tx">This lets SupportView see your screen and use your keyboard and mouse.</div><div class="bs"><div>Don’t Allow</div><div class="tapme">Allow</div></div></div>':'')+'<div class="url">'+IC.lock.replace('viewBox','width="13" height="13" viewBox')+esc(spec.url)+'</div></div>';
+    break;
+  case "bank":
+    h='<div class="view bank"><div class="bh"><div class="k">Bank</div><div class="t">'+(spec.wire?"Send a wire":"Transfer money")+'</div></div>'+
+      '<div class="bx"><div class="l">From</div><div class="v">'+esc(spec.from)+' <small>'+spec.fromSub+'</small></div></div>'+
+      '<div class="bx"><div class="l">To</div><div class="v">'+esc(spec.to)+'<span class="new">NEW</span></div><div class="l" style="margin-top:3px">'+esc(spec.toSub)+'</div></div>'+
+      '<div class="bx"><div class="l">Amount</div><div class="amt">'+spec.amt+'</div></div>'+
+      '<div class="send tapme">Send '+spec.amt+'</div></div>';
+    break;
+  case "acct":
+    h='<div class="view bank"><div class="bh"><div class="k">Bank</div><div class="t">Accounts</div></div>'+spec.rows.map(function(r){return '<div class="bx"><div class="l">'+esc(r[0])+'</div><div class="amt" style="font-size:32px">'+r[1]+'</div></div>'}).join("")+
+      '<div class="bx" style="background:#FFF4DE"><div class="v" style="font-size:16px">Cash withdrawals over $10,000</div><div class="l" style="margin-top:3px">Visit a branch. A teller will prepare your cash.</div></div><div class="send">Find a branch</div></div>';
+    break;
+  case "wallet":
+    h='<div class="view bank" style="background:#0E1116;color:#fff"><div style="padding:66px 20px 0;font-size:15px;opacity:.6">Wallet</div><div style="padding:4px 20px 0;font-size:26px;font-weight:700">Send USDC</div>'+
+      '<div class="bx" style="background:#1A1F27"><div class="l" style="color:#8B93A1">To address</div><div class="v" style="font-family:ui-monospace,Menlo,monospace;font-size:16px">'+spec.to+'<span class="new">NEW</span></div><div class="l" style="margin-top:3px;color:#8B93A1">'+spec.toSub+'</div></div>'+
+      '<div class="bx" style="background:#1A1F27"><div class="l" style="color:#8B93A1">Amount</div><div class="amt">'+spec.amt+'</div><div class="l" style="color:#8B93A1">Network fee $1.12</div></div>'+
+      '<div class="send tapme" style="background:#3B82F6">Send '+spec.amt+'</div></div>';
+    break;
+  }
+  return {h:h,dark:dark,light:light};
+}
+var ENDBTN='<div class="end" style="margin-top:auto"><svg width="34" height="34" viewBox="0 0 24 24" fill="#fff" style="transform:rotate(135deg)"><path d="M6.6 10.8a15.1 15.1 0 006.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 013 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg></div>';
+function confView(o){
+  return '<div class="view call"><div class="who" style="margin-top:84px"><div class="nm" style="font-size:30px">'+esc(o.title)+'</div><div class="sb">'+esc(o.sub)+'</div><div class="du" data-call="'+o.sec+'">'+fmtDur(o.sec)+'</div></div>'+
+    '<div class="cl">'+o.people.map(function(p){return '<div class="pp'+(p.gone?' gone':'')+(p.ics?' isics':'')+'"><span class="av">'+(p.ics?mark("#F5EDDF","#EC8468"):esc(p.av))+'</span><span><span class="n">'+esc(p.n)+'</span><span class="s">'+esc(p.s)+'</span></span>'+(p.rec?'<span class="rec"><i></i>REC</span>':'')+'</div>'}).join("")+'</div>'+
+    (o.said?'<div class="said"><small>'+esc(o.said.who)+'</small>“'+esc(o.said.t)+'”</div>':'')+ENDBTN+'</div>';
+}
+function intA(name){
+  var s=sc(), c=s.contact, h="", dark=true, light=true;
+  switch(name){
+  case "pause": case "pausetx":
+    h='<div class="view hot">'+anav(null,true)+'<div class="mid"><div class="ring">'+mark("#F5EDDF","#EC8468")+'</div><div class="big" style="text-align:center">'+(name==="pause"?"We paused your call for a moment.":"We paused this transfer for a moment.")+'</div><div class="small" style="text-align:center">'+(name==="pause"?"The caller can’t hear you right now. Take one slow breath.":"Nothing has been sent. Take one slow breath.")+'</div></div><div style="height:60px"></div></div>';
+    break;
+  case "ask":
+    h='<div class="view hot">'+anav(null,true)+'<div class="mid"><div class="eyebrow">One question</div><div class="big">'+s.q+'</div><div class="small">'+s.qs+'</div></div><div class="foot" style="padding:12px 18px 34px;display:flex;flex-direction:column;gap:9px"><button class="abtn cream" data-adv>Yes, someone is</button><button class="abtn out" data-adv>No</button></div></div>';
+    break;
+  case "words":
+    h='<div class="view hot">'+anav(null,true)+'<div class="mid"><div class="eyebrow">You wrote this, on a calm day</div><div class="quote"><div class="q">“'+esc(s.rule)+'”</div><div class="qsig">'+esc(s.ruleDate)+'</div></div></div><div class="foot" style="padding:12px 18px 34px"><button class="abtn cream" data-adv>That’s my rule</button></div></div>';
+    break;
+  case "distance":
+    h='<div class="view hot">'+anav(null,true)+'<div class="mid"><div class="eyebrow">Imagine it was someone else</div><div class="big" style="font-size:30px">'+esc(s.distance)+'</div></div><div class="foot" style="padding:12px 18px 34px;display:flex;flex-direction:column;gap:9px"><button class="abtn cream" data-adv>'+esc(s.dOpts[0])+'</button><button class="abtn out" data-adv>'+esc(s.dOpts[1])+'</button></div></div>';
+    break;
+  case "hold":
+    dark=false; light=false;
+    h='<div class="view ics">'+anav()+'<div class="hl" style="margin-top:34px;font-size:29px">Your '+s.amount+' is safe.<br>It is waiting, not gone.</div><div class="timer" data-hold="'+s.holdSec+'">'+fmtHMS(s.holdSec)+'</div><div class="timerl">'+esc(s.hold)+'</div>'+
+      '<div class="held"><span class="av">'+c.i+'</span><span>'+c.n+' knows what happened, so you don’t have to explain.</span></div><div class="fact">'+esc(s.fact)+'</div>'+
+      '<div class="foot"><button class="abtn" data-adv>Call '+c.n+'</button><button class="abtn ghost" data-adv>'+(s.kind==="call"?"I hung up":"I stopped talking to them")+'</button></div></div>';
+    break;
+  case "calling":
+    h='<div class="view hot">'+anav(null,true)+'<div class="mid" style="text-align:center"><div style="width:120px;height:120px;border-radius:50%;background:var(--pist-soft);color:var(--pistachio);margin:0 auto 18px;display:flex;align-items:center;justify-content:center;font-size:46px;font-weight:600">'+c.i+'</div><div class="big" style="text-align:center">'+c.n+'</div><div class="small" style="text-align:center;margin-top:8px">Calling…</div><div class="small" style="text-align:center">The other call is ended. It is just the two of you now.</div></div><div style="height:90px"></div></div>';
+    break;
+  case "sosask":
+    var cb=scrA(s.steps[s.steps.length-1].screen).h;
+    h=cb.replace(/<\/div>$/,'')+'<div class="dim"></div><div class="lightsheet"><div class="anav">'+mark()+'<span>Ice Cream Security</span></div><div class="q">'+s.q.replace(/<\/?em>/g,"")+'</div><div class="sm">Your rule says to add us. We answer on the first ring, day or night.</div><button class="abtn" data-adv>Add Ice Cream Security</button><button class="abtn ghost" data-adv>No, it isn’t about money</button></div></div>';
+    break;
+  case "ring":
+    h='<div class="view call"><div class="who" style="margin-top:150px"><div class="ring">'+mark("#F5EDDF","#EC8468")+'</div><div class="nm" style="font-size:30px">Ice Cream Security</div><div class="sb">Joining your call</div><div class="first">Answered on the first ring<b>1.1 seconds</b></div></div></div>';
+    break;
+  case "conf":
+    h=confView({title:"Conference",sub:"Recorded, both callers told",sec:1388,people:[{av:"S",n:"Social Security Admin",s:"(202) 555 0118"},{ics:1,n:"Ice Cream Security",s:"Automated attendant, joined on the first ring",rec:1}],said:{who:"Ice Cream Security, to both callers",t:SOS_ATT}});
+    break;
+  case "gone":
+    h=confView({title:"Conference",sub:"Recorded",sec:1397,people:[{av:"S",n:"Social Security Admin",s:"Hung up 9 seconds after Ice Cream Security joined",gone:1},{ics:1,n:"Ice Cream Security",s:"Automated attendant",rec:1}],said:{who:"Ice Cream Security, to Carol",t:"The caller hung up. You did exactly what your rule says. A specialist is joining you now."}});
+    break;
+  case "human":
+    h=confView({title:"Ice Cream Security",sub:"A specialist is with you",sec:1435,people:[{ics:1,n:"Ice Cream Security",s:"Attendant, still recording",rec:1},{av:"G",n:"Grace",s:"Ice Cream Security specialist, joined in 38 seconds"}],said:{who:"Grace, Ice Cream Security specialist",t:SOS_GRACE}});
+    break;
+  case "safe":
+    dark=false; light=false;
+    h='<div class="view ics">'+anav()+'<div class="calmdisc" style="margin-top:30px">'+IC.check+'</div><div class="hl">You are safe, '+s.person+'.<br>Your '+s.amount+' is still yours.</div><div class="held"><span class="av">'+c.i+'</span><span>'+c.n+' is joining the call. He already knows what happened.</span></div><div class="fact">'+esc(s.fact)+'</div><div class="rule2"><b>Ice Cream Security never calls you.</b> You call us. If someone calls saying they are Ice Cream Security, hang up.</div><div class="foot"><button class="abtn" data-adv>Talk to '+c.n+'</button></div></div>';
+    break;
+  case "light":
+    dark=false; light=false;
+    var b=scrA(step().screen).h.replace('send tapme','send');
+    h=b.replace(/<\/div>$/,'')+'<div class="dim"></div><div class="lightsheet">'+'<div class="anav">'+mark()+'<span>Ice Cream Security</span></div><div class="q">'+s.q+'</div><button class="abtn tapme" data-adv>No, this is mine</button><button class="abtn ghost" data-adv>Yes, someone is</button></div></div>';
+    break;
+  case "sent":
+    dark=false; light=false;
+    h='<div class="view bank"><div class="bh"><div class="k">Bank</div><div class="t">Transfer money</div></div><div class="ok"><div class="c"><svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.7l5 5L20 6.7"/></svg></div><div class="t">Sent</div><div class="s">$4,200 to Pine Hill Roofing</div></div></div>';
+    break;
+  }
+  return {h:h,dark:dark,light:light};
+}
+
+/* ============ phone B ============ */
+function scrBsos(stB,bt){
+  var s=sc(), p=s.person;
+  if(stB==="human"||stB==="safe"||S.done){
+    var ev=S.sigs.slice(-1).map(function(g){return '<div class="ev"><span class="dot" style="background:var(--ch-'+(g.ch==="Message"?"msg":g.ch.toLowerCase())+')"></span><span><span class="tx">'+esc(g.t)+'</span><span class="tm">'+esc(g.stamp)+' · '+g.ch+'</span></span></div>'}).join("")+
+      '<div class="ev"><span class="dot" style="background:var(--pistachio)"></span><span><span class="tx">'+p+' added Ice Cream Security. Answered on the first ring.</span><span class="tm">3:27 PM · SOS line</span></span></div>'+
+      '<div class="ev"><span class="dot" style="background:var(--pistachio)"></span><span><span class="tx">The caller hung up 9 seconds later</span><span class="tm">3:28 PM · SOS line</span></span></div>';
+    var ring=(stB==="safe"||S.done);
+    var cin = ring ? '<div class="callin icsin"><span class="av">'+mark("#F5EDDF","#EC8468")+'</span><span><b style="font-size:16px">Ice Cream Security</b><br><span style="font-size:13.5px;opacity:.7">adding you to '+p+'’s call</span></span><span class="g">'+IC.phone.replace('viewBox','width="22" height="22" viewBox')+'</span></div><div style="height:8px"></div>' : '<div style="height:52px"></div>';
+    return {dark:false,light:false,h:'<div class="view ics fam">'+cin+anav("Ice Cream Security Family").replace('class="anav"','class="anav" style="padding-top:10px"')+
+      '<div class="alertline">'+p+' is safe</div><div class="lead">A caller posing as Social Security wanted '+s.amount+' in cash. '+p+' added Ice Cream Security, and the caller hung up.</div>'+
+      '<div class="sc"><b>'+Math.round(S.score)+'</b><span>out of 100 when '+p+' added us</span></div><div class="bar"><i style="width:'+Math.min(100,S.score)+'%"></i></div>'+
+      '<div class="ics"><div class="hdr" style="margin:16px 26px 0">What happened</div></div><div class="tl">'+ev+'</div>'+
+      '<div class="foot" style="padding:12px 18px 30px"><button class="abtn">Join the call</button></div></div>'};
+  }
+  return {dark:true,light:true,h:'<div class="view lock"><div class="dt">Tuesday, November 3</div><div class="tm">'+bt+'</div><div class="notes"></div><div class="flash"></div><div class="cam"></div></div>'};
+}
+function scrB(){
+  var s=sc(), c=s.contact, p=s.person, h, dark=true, light=true;
+  var stB = S.phase==="int" ? INT[s.kind][S.ii] : null;
+  var bt = S.phase==="int" ? sc().steps[sc().steps.length-1].time : (step()?step().time:"9:41");
+  if(s.kind==="sos") return scrBsos(stB,bt);
+  if(stB==="hold" || stB==="calling" || (S.done && s.kind!=="light")){
+    dark=false; light=false;
+    var ev=S.sigs.map(function(g){return '<div class="ev"><span class="dot" style="background:var(--ch-'+(g.ch==="Message"?"msg":g.ch.toLowerCase())+')"></span><span><span class="tx">'+esc(g.t)+'</span><span class="tm">'+esc(g.stamp)+' · '+g.ch+'</span></span></div>'}).join("");
+    h='<div class="view ics fam">'+(stB==="calling"||S.done?'<div class="callin"><span class="av">'+p[0]+'</span><span><b style="font-size:16px">'+p+'</b><br><span style="font-size:13.5px;opacity:.7">incoming call</span></span><span class="g">'+IC.phone.replace('viewBox','width="22" height="22" viewBox')+'</span></div><div style="height:8px"></div>':'<div style="height:52px"></div>')+
+      anav("Ice Cream Security Family").replace('class="anav"','class="anav" style="padding-top:'+(stB==="calling"||S.done?"10px":"10px")+'"')+
+      '<div class="alertline">'+p+' needs you</div><div class="lead">Ice Cream Security held a '+s.amount+' '+(s.kind==="call"?"transfer":"crypto transfer")+'. '+(s.kind==="call"?"Someone has been on the phone with "+p+" for "+s.firstToHold.replace(" min"," minutes")+".":"Someone "+p+" met online has been coaching this for "+s.firstToHold+".")+'</div>'+
+      '<div class="sc"><b>'+Math.round(S.score)+'</b><span>out of 100, held at the money move</span></div><div class="bar"><i style="width:'+Math.min(100,S.score)+'%"></i></div>'+
+      '<div class="ics"><div class="hdr" style="margin:16px 26px 0">What happened</div></div><div class="tl">'+ev+'</div>'+
+      '<div class="foot" style="padding:12px 18px 30px"><button class="abtn">Call '+p+'</button><button class="abtn ghost">Keep it held</button></div></div>';
+  } else {
+    var notes = stB==="hold" ? "" : "";
+    h='<div class="view lock"><div class="dt">'+(S.k==="romance"?"Friday, October 23":"Tuesday, November 3")+'</div><div class="tm">'+bt+'</div><div class="notes">'+(S.k==="normal"&&(S.done||S.phase==="int")?'':'')+'</div><div class="flash"></div><div class="cam"></div></div>';
+  }
+  return {h:h,dark:dark,light:light};
+}
+function lockNote(){
+  var s=sc(), c=s.contact;
+  if(s.kind==="sos") return '<div class="note"><div class="ic">'+mark()+'</div><div style="flex:1"><div class="hd">Ice Cream Security<span>now</span></div><div class="bd"><b>'+s.person+' added Ice Cream Security to a call.</b> A caller asked her for cash. We are on the line with her now.</div></div></div>';
+  return '<div class="note"><div class="ic">'+mark()+'</div><div style="flex:1"><div class="hd">Ice Cream Security<span>now</span></div><div class="bd"><b>'+s.person+' may be in a scam right now.</b> We held a '+s.amount+' transfer and asked '+(s.person==="Jordan"?"her":s.person==="Dana"?"her":"him")+' to call you.</div></div></div>';
+}
+
+/* ============ render ============ */
+function paint(el,o){
+  el.innerHTML = sbarWrap(o) + o.h + '<div class="island" id="isl_'+el.id+'"><span class="il">'+mark("#F5EDDF","#EC8468")+'<span>Ice Cream Security</span></span><span class="ir"></span></div><div class="homebar'+(o.light?" light":"")+'"></div>';
+}
+var curTime="9:41";
+function sbarWrap(o){return sbar(curTime,o.dark)}
+function renderPhones(){
+  clearTickers();
+  var s=sc(), A, st=step();
+  curTime = st ? st.time : "9:41";
+  if(S.phase==="scam") A=scrA(st.screen); else A=intA(INT[s.kind][S.ii]);
+  if(S.phase!=="scam") curTime = s.steps[s.steps.length-1].time;
+  paint($("scrA"),A);
+  var B=scrB(); var keepT=curTime; paint($("scrB"),B);
+  var stB = S.phase==="int" ? INT[s.kind][S.ii] : null;
+  if(stB==="hold" && !S.done){ /* lock screen with notification first, then family */ }
+  // island state on A: armed or interrupt
+  var armed = S.score>=70;
+  var islA=$("isl_scrA");
+  if(islA && (armed || S.phase==="int") && s.kind!=="light") islA.classList.add("live");
+  // B: notification on lock during pause..distance
+  if(S.phase==="int" && ["pause","pausetx","ask","words","distance","conf","gone"].indexOf(stB)>=0){
+    var n=$("scrB").querySelector(".notes"); if(n) n.innerHTML=lockNote();
+  }
+  // tickers
+  $("scrA").querySelectorAll("[data-call]").forEach(function(e){var v=+e.getAttribute("data-call");tickers.push(setInterval(function(){v++;e.textContent=fmtDur(v)},1000))});
+  $("scrA").querySelectorAll("[data-hold]").forEach(function(e){var v=+e.getAttribute("data-hold");tickers.push(setInterval(function(){v--;e.textContent=fmtHMS(v)},1000))});
+  $("scrA").querySelectorAll("[data-adv]").forEach(function(b){b.addEventListener("click",function(){next(true)})});
+  if(S.phase==="int"){ var f=$("scrA").querySelector("[data-adv]"); if(f && S.playing) setTimeout(function(){f.classList.add("tapme")}, Math.max(600,(INTDUR[INT[s.kind][S.ii]]||4000)-1600)); }
+}
+
+function renderEngine(){
+  var s=sc(), st=step();
+  $("eMask").textContent=s.mask; $("eWho").textContent=s.who;
+  var stage = S.phase==="scam" ? st.stage : 3;
+  $("eRail").innerHTML=STAGES.map(function(x,n){var cls = n<stage?"done": n===stage?"now"+(n===3?" money":""):""; if(S.k==="normal" && n<3) cls=""; return '<div class="'+cls+'">'+x[0]+'<small>'+x[1]+'</small></div>'}).join("");
+  // window
+  var w="0 min";
+  if(S.sigs.length){ w = (S.phase==="int"||S.done||S.i===s.steps.length-1)? s.winLabel : winSoFar(); }
+  $("eWin").textContent=w;
+  // score
+  animScore(S.score);
+  var st8=$("eState"), lab="Watching", cls="";
+  if(S.phase==="int"||S.done){ if(s.kind==="light"){lab="Asked";} else if(s.kind==="sos"){ var nm0=INT.sos[S.ii]; if(S.done||nm0==="safe"){lab="Safe";cls="";} else if(nm0==="sosask"){lab="Asking";cls="armed";} else {lab="On the call";cls="held";} } else {lab="Held";cls="held";} }
+  else if(S.score>=70 && st.stage<3){lab="Armed";cls="armed";}
+  else if(S.score>=70){lab=s.kind==="sos"?"Armed":"Holding";cls=s.kind==="sos"?"armed":"held";}
+  st8.className="state "+cls; st8.querySelector("span").textContent=lab;
+  var tier = S.score>=70?3:S.score>=50?2:S.score>=20?1:0;
+  var sp=$("eLadder").querySelectorAll("span"); sp.forEach(function(e,n){e.classList.toggle("lit",n<=tier && S.score>0)});
+  $("eLadL").querySelectorAll("span").forEach(function(e,n){e.classList.toggle("on",n===tier && S.score>0)});
+  $("ePin").style.left="calc("+Math.min(99,S.score)+"% - 1px)";
+  drawChart();
+  // line
+  var L = S.phase==="scam" ? st.line : null;
+  if(S.phase==="scam"){
+    $("eLineL").textContent = L ? L.who : "On the line";
+    $("eLine").textContent = L ? "“"+L.t+"”" : (S.k==="normal" && S.i>0 ? "Nobody. Ray is paying his roofer." : "Nobody yet.");
+    $("eLine").className = "q"+(L?"":" none");
+    $("eLineS").textContent = st.stamp;
+  } else {
+    $("eLineL").textContent = "On "+s.person+"'s screen";
+    var nm=INT[s.kind][S.ii];
+    var said={pause:"The call is muted. A different, calm voice speaks first.",pausetx:"The transfer is paused before anything leaves.",ask:s.q.replace(/<[^>]+>/g,""),words:"Their own rule, in their own words, with the date they wrote it.",distance:s.distance||"",hold:"The money waits. "+s.contact.n+" is told. Time is the treatment.",calling:"A second trusted voice. The scammer is no longer the only one in the room.",light:s.q,sent:"Sent. One tap, no delay, no lecture."}[nm];
+    if(s.kind==="sos"){ said={sosask:s.q.replace(/<[^>]+>/g,""),ring:"Ice Cream Security answered on the first ring, 1.1 seconds after Carol tapped.",conf:SOS_ATT,gone:"The caller hung up 9 seconds after Ice Cream Security joined.",human:SOS_GRACE,safe:"Michael is joining. Carol does not have to explain anything."}[nm]; $("eLineL").textContent = nm==="sosask"?"On Carol's screen":"On the conference call"; }
+    $("eLine").textContent=said; $("eLine").className="q"; $("eLineS").textContent = (S.k==="normal")?"One question, then out of the way":(s.kind==="sos"?"The SOS line, step ":"The state break, step ")+(S.ii+1)+" of "+INT[s.kind].length;
+  }
+  var hb=$("bHang");
+  hb.hidden = S.k==="normal";
+  if(S.hang){hb.classList.add("set");hb.textContent="The room would hang up at "+S.hang.name+"";}
+  else {hb.classList.remove("set");hb.textContent="Where would you hang up? Tap here.";}
+  // note
+  var note = S.phase==="scam" ? st.note : intNote();
+  $("eNote").innerHTML = note;
+  // decision
+  var d=$("eDec");
+  if(S.phase==="int" || S.done){ d.hidden=false; d.innerHTML=decision(); } else d.hidden=true;
+  // feed
+  var f=$("eFeed");
+  if(!S.sigs.length){ f.innerHTML='<div class="empty">No signals yet. Ice Cream Security reads the shape of what is happening, never the content of your email, photos, or what you type.</div>'; }
+  else f.innerHTML=S.sigs.slice().reverse().map(function(g,n){return '<div class="sig'+(n===0&&S.phase==="scam"?" new":"")+'"><span class="chip '+g.ch+'">'+g.ch+'</span><div><div class="t">'+esc(g.t)+'</div><div class="s">'+esc(SRC[g.ch])+'</div></div><div class="m">+'+g.w+' × '+g.m.toFixed(1)+'<br><b>→ '+Math.round(g.after)+'</b><div class="tm">'+esc(g.stamp)+'</div></div></div>'}).join("");
+}
+function winSoFar(){
+  var s=sc(), a=S.sigs[0], b=S.sigs[S.sigs.length-1];
+  if(S.k==="romance"){ var d=[0,0,9,16,21,22]; return (d[S.i]||0)+" days"; }
+  var tm=function(x){var p=x.stamp.match(/(\d+):(\d+)/);return (+p[1])*60+(+p[2])};
+  var m=tm(b)-tm(a); return m+" min";
+}
+function intNote(){
+  var s=sc(), nm=INT[s.kind][S.ii];
+  return ({
+   pause:"<b>Stop the audio first.</b> The victim is held by a continuous voice, not by a screen. Nothing else lands until that voice stops.",
+   pausetx:"<b>Pause before anything leaves.</b> No banner, no red alarm. The scammer told her to expect warnings, so we do not give one.",
+   ask:"<b>Ask, don’t assert.</b> “This is a scam” is a claim the scammer has already discredited. This question describes the scammer’s own script, so he cannot preempt it without exposing himself.",
+   words:"<b>Their own words back.</b> The rule was written in a calm moment. Now the app is not an outside authority, it is their own prior self.",
+   distance:"<b>The distanced question.</b> Asking about someone else recruits the reasoning that still works, instead of trying to override the panic.",
+   hold:"<b>Time and a second voice.</b> Only this one transfer is held, never the account. "+s.contact.n+" gets the full timeline. Release needs "+s.contact.n+" or the wait.",
+   calling:"<b>The handoff.</b> The scammer’s power is being the only voice in the room. "+s.contact.n+" does not have to win an argument, only be there.",
+   sosask:"<b>Her own rule, one tap away.</b> Cash leaves no payment for a bank to stop, so the interrupt has to reach the call itself. Carol wrote this rule on a calm day in April: anyone who calls asking for money, I add Ice Cream Security.",
+   ring:"<b>Answer on the first ring.</b> An unanswered ring is the scammer’s exit ramp and the victim’s doubt window. The automated attendant picks up in about a second, any hour, any volume. People are the second voice, not the first.",
+   conf:"<b>Break the isolation out loud.</b> The attendant speaks to both callers at once and announces the recording before anything else. A real agency has no problem with a witness. A scammer’s whole method is being the only voice in the room.",
+   gone:"<b>The refusal is the detection.</b> Carol never had to decide whether this was a scam. She followed her rule, and the caller outed himself by leaving.",
+   human:"<b>A trained person inside a minute.</b> The UK Banking Protocol, where trained branch staff question a customer privately, is the strongest field evidence that a human interrupt works. This delivers it by phone. A specialist joins only at high score, which keeps round the clock staffing affordable.",
+   safe:"<b>Ice Cream Security never calls you. You call us.</b> The companion rule keeps the line from becoming the next spoofing target. Michael gets the full timeline, and Carol does not have to explain.",
+   light:"<b>Friction proportional to the score.</b> 22 earns one light question. No hold, no family alert, no lecture.",
+   sent:"<b>Normal days stay normal.</b> The same transfer that was held in the scam runs through here with a single tap."
+  })[nm];
+}
+function decision(){
+  var s=sc();
+  if(s.kind==="sos"){
+    var room2 = S.hang ? 'The room said it would hang up at <b>'+S.hang.name+'</b>. Carol was still on at the money move, and she did not have to win that argument. Her rule did.' : 'Ask the room where they would have hung up, then replay. Carol never had to decide it was a scam. She only had to follow her rule.';
+    return '<div class="lbl">At the money move</div><div class="d">The money was going to leave as cash, so there was no transfer to hold. Score <em>'+Math.round(S.score)+'</em> earned one question, and Carol’s own rule brought in a second voice.</div>'+
+      '<div class="stats"><div><b>1 ring</b>answered in 1.1 seconds</div><div><b>9 sec</b>until the caller hung up</div><div><b>'+s.saved+'</b>still hers</div></div>'+
+      '<div class="room">'+room2+'<small>In 2025, 14% of government impersonation and 11% of tech support complaints reported paying in cash, and gold courier scams averaged about $430,000 per complaint. FBI IC3 2025 Annual Report, pp. 10, 12.</small></div>';
+  }
+  if(s.kind==="light"){
+    return '<div class="lbl">At the money move</div><div class="d">Score <em>22</em> earns one question. Ray answers no, and the roofer is paid.</div><div class="stats"><div><b>1 tap</b>added friction</div><div><b>0</b>holds</div><div><b>0</b>family alerts</div></div><div class="room">Same person, same bank, same new payee as the tech support scam. The sequence is the difference, and only the sequence.</div>';
+  }
+  var room = S.hang ? 'The room said it would hang up at <b>'+S.hang.name+'</b>. '+s.person+' was still on at the money move. That gap between the calm version and the scared version is the whole product.'
+                    : 'Ask the room where they would have hung up, then replay. Almost everyone picks a stage before the money move.';
+  return '<div class="lbl">At the money move</div><div class="d">Score <em>'+Math.round(S.score)+'</em> earns the strongest tier. The transfer is held, '+s.contact.n+' is told, and '+s.person+' gets a question instead of a warning.</div>'+
+    '<div class="stats"><div><b>'+s.firstToHold+'</b>first signal to hold</div><div><b>$0</b>money lost</div><div><b>'+s.saved+'</b>still theirs</div></div>'+
+    '<div class="room">'+room+'<small>In 2025 the FBI reached 3,780 crypto investment victims. 78% did not know they were being scammed. FBI IC3 2025 Annual Report, p. 20.</small></div>';
+}
+var shownScore=0, scoreRAF=null;
+function animScore(target){
+  cancelAnimationFrame(scoreRAF);
+  var from=shownScore, t0=performance.now();
+  function f(t){var k=Math.min(1,(t-t0)/900); k=1-Math.pow(1-k,3); shownScore=from+(target-from)*k; $("eScore").textContent=Math.round(shownScore); if(k<1) scoreRAF=requestAnimationFrame(f);}
+  scoreRAF=requestAnimationFrame(f);
+}
+function drawChart(){
+  var W=320,H=96,pad=4, s=sc(), n=Math.max(2,s.steps.length);
+  var x=function(i){return 26+(W-32)*(i/(n-1))}, y=function(v){return H-12-(H-22)*(v/100)};
+  var pts=S.hist.map(function(p){return x(p.i).toFixed(1)+","+y(p.s).toFixed(1)}).join(" ");
+  var th=[[20,"Ask"],[50,"Name it"],[70,"Hold"]].map(function(a){return '<line x1="26" x2="'+(W-6)+'" y1="'+y(a[0])+'" y2="'+y(a[0])+'" stroke="#E3D6C3" stroke-dasharray="3 4"/><text x="0" y="'+(y(a[0])+3.5)+'" font-size="9" fill="#9A8B7E" font-family="Inter,sans-serif">'+a[0]+'</text>'}).join("");
+  var dots=S.hist.map(function(p,k){return '<circle cx="'+x(p.i)+'" cy="'+y(p.s)+'" r="'+(k===S.hist.length-1?4.5:3)+'" fill="'+(p.ch?"var(--ch-"+(p.ch==="Message"?"msg":p.ch.toLowerCase())+")":"#9A8B7E")+'"/>'}).join("");
+  var area = S.hist.length>1 ? '<polygon points="'+x(S.hist[0].i)+','+y(0)+' '+pts+' '+x(S.hist[S.hist.length-1].i)+','+y(0)+'" fill="#EC8468" fill-opacity=".12"/>' : "";
+  $("eChart").innerHTML='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Score over the sequence">'+th+'<line x1="26" x2="'+(W-6)+'" y1="'+y(0)+'" y2="'+y(0)+'" stroke="#E3D6C3"/>'+area+(S.hist.length>1?'<polyline points="'+pts+'" fill="none" stroke="#241C17" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>':"")+dots+'</svg>';
+}
+
+/* ============ flow ============ */
+function applyStep(){
+  var st=step();
+  if(st.sig){
+    var had=Object.keys(S.ch).length; S.ch[st.sig.ch]=1; var kinds=Object.keys(S.ch).length;
+    var m=MULT[kinds]; var add=st.sig.w*m; S.score=Math.min(99,S.score+add);
+    S.sigs.push({ch:st.sig.ch,t:st.sig.t,w:st.sig.w,m:m,after:S.score,stamp:st.stamp});
+    S.hist.push({i:S.i,s:S.score,ch:st.sig.ch});
+  } else if(!S.hist.length){ S.hist.push({i:S.i,s:0}); }
+}
+function render(){ renderPhones(); renderEngine(); fit(); var e=$("eng"); if(e.scrollHeight>e.clientHeight) e.scrollTop=0; }
+function schedule(){
+  clearTimeout(timer);
+  if(!S.playing||S.done) return;
+  var d = S.phase==="scam" ? step().dur : (INTDUR[INT[sc().kind][S.ii]]||4000);
+  timer=setTimeout(function(){next(false)}, d);
+}
+function next(manual){
+  var s=sc();
+  if(S.done){ return; }
+  if(S.phase==="scam"){
+    if(S.i < s.steps.length-1){ S.i++; applyStep(); }
+    else { S.phase="int"; S.ii=0; onInt(); }
+  } else {
+    if(S.ii < INT[s.kind].length-1){ S.ii++; onInt(); }
+    else { S.done=true; S.playing=false; setPlay(); }
+  }
+  render(); schedule();
+}
+function onInt(){
+  var nm=INT[sc().kind][S.ii];
+  if(nm==="sosask"){chime();say(sc().qSay);return;}
+  if(nm==="conf"){say(SOS_ATT);return;}
+  if(nm==="human"){say(SOS_GRACE,true);return;}
+  if(nm==="pause"||nm==="pausetx") chime();
+  if(nm==="ask"||nm==="light") say(sc().qSay||sc().q.replace(/<[^>]+>/g,""));
+  if(nm==="pause") say("Let's take a moment.");
+}
+function load(k){
+  clearTimeout(timer); try{speechSynthesis.cancel()}catch(e){}
+  S={k:k,i:0,phase:"scam",ii:0,score:0,ch:{},sigs:[],hist:[],playing:S.playing,hang:null,voice:S.voice,done:false};
+  shownScore=0; applyStep();
+  document.querySelectorAll("#masks button").forEach(function(b){b.classList.toggle("on",b.dataset.k===k)});
+  var s=sc(); $("capA").textContent=s.person+"'s iPhone"; $("capB").textContent=s.contact.n+"'s iPhone";
+  $("tabA").textContent=s.person+"'s iPhone"; $("tabB").textContent=s.contact.n+"'s iPhone";
+  setPlay(); render(); schedule();
+}
+function setPlay(){ var b=$("bPlay"); b.querySelector(".lbtxt").textContent=S.playing?"Pause":(S.done?"Replay":"Play"); b.querySelector("svg").innerHTML=S.playing?'<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>':'<path d="M7 5l12 7-12 7z"/>'; b.setAttribute("aria-label",S.playing?"Pause":"Play"); }
+function togglePlay(){
+  unlockAudio();
+  if(S.done){ S.playing=true; load(S.k); setPlay(); return; }
+  S.playing=!S.playing; setPlay(); if(S.playing) next(false); else clearTimeout(timer);
+}
+
+/* ============ sound ============ */
+var AC=null;
+function unlockAudio(){ try{ if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();} if(AC.state==="suspended") AC.resume(); }catch(e){} }
+function chime(){
+  if(!S.voice) return;
+  try{ unlockAudio(); var t=AC.currentTime; [[659.25,0],[880,0.32]].forEach(function(n){var o=AC.createOscillator(),g=AC.createGain();o.type="sine";o.frequency.value=n[0];g.gain.setValueAtTime(0,t+n[1]);g.gain.linearRampToValueAtTime(.18,t+n[1]+.04);g.gain.exponentialRampToValueAtTime(.0001,t+n[1]+1.4);o.connect(g);g.connect(AC.destination);o.start(t+n[1]);o.stop(t+n[1]+1.5);}); }catch(e){}
+}
+var VOICES=[];
+function loadVoices(){ try{ VOICES=speechSynthesis.getVoices()||[]; }catch(e){} showVoice(); }
+var PRI=[/^Ava \(Premium\)/i,/^Zoe \(Premium\)/i,/Microsoft (Ava|Jenny|Aria|Emma).*Natural/i,/^Ava \(Enhanced\)/i,/^Zoe \(Enhanced\)/i,/^Samantha \(Enhanced\)/i,/^Google US English/i,/^Samantha/i,/^Ava/i,/^Allison/i];
+var ALT=[/^Joelle \(Premium\)/i,/^Noelle \(Premium\)/i,/^Zoe \(Premium\)/i,/Microsoft (Michelle|Sara|Jenny).*Natural/i,/^Zoe \(Enhanced\)/i,/^Karen \(Enhanced\)/i,/^Karen/i,/^Moira/i,/^Tessa/i,/^Google UK English Female/i];
+function pickVoice(list,not){ for(var i=0;i<list.length;i++){ for(var j=0;j<VOICES.length;j++){ var v=VOICES[j]; if(/^en/i.test(v.lang)&&list[i].test(v.name)&&v!==not) return v; } } return null; }
+function showVoice(){ var el=document.getElementById("vName"); if(!el) return; var m=pickVoice(PRI), g=pickVoice(ALT,m); el.textContent = m ? ("Voices in use: "+m.name+(g?" for the attendant, "+g.name+" for the specialist.":".")+(/Premium|Natural/i.test(m.name)?"":" For a more natural voice, install a Premium voice on this Mac.")) : "No English voice found on this device."; }
+function say(txt,alt){
+  if(!S.voice||!window.speechSynthesis) return;
+  try{
+    if(!VOICES.length) loadVoices();
+    var main=pickVoice(PRI), v=alt?(pickVoice(ALT,main)||main):main;
+    var parts=String(txt).match(/[^.?!]+[.?!]+["”’]?\s*|[^.?!]+$/g)||[String(txt)];
+    parts.forEach(function(p){ p=p.trim(); if(!p) return; var u=new SpeechSynthesisUtterance(p); if(v){u.voice=v;u.lang=v.lang;} u.rate=alt?0.97:1.0; u.pitch=(alt&&v===main)?0.9:1; u.volume=1; speechSynthesis.speak(u); });
+  }catch(e){}
+}
+if(window.speechSynthesis){ try{ speechSynthesis.addEventListener("voiceschanged",loadVoices); }catch(e){ speechSynthesis.onvoiceschanged=loadVoices; } setTimeout(loadVoices,0); }
+
+/* ============ fit phones ============ */
+function fit(){
+  document.querySelectorAll(".slot").forEach(function(slot){
+    if(!slot.offsetParent) return;
+    var w=slot.clientWidth, h=slot.clientHeight, isB=slot.parentNode.id==="pB";
+    var sc=Math.min(w/414, h/868, 1.05); if(isB && window.innerWidth>=1100) sc=Math.min(sc, h/868*0.94);
+    var pw=slot.querySelector(".pwrap"), ph=slot.querySelector(".phone");
+    pw.style.width=(414*sc)+"px"; pw.style.height=(868*sc)+"px"; ph.style.transform="scale("+sc+")";
+  });
+}
+window.addEventListener("resize",fit);
+
+/* ============ wire controls ============ */
+$("masks").innerHTML=ORDER.map(function(k,n){return (n===4?'<span class="sep"></span>':'')+'<button data-k="'+k+'">'+SC[k].tab+'</button>'}).join("");
+$("masks").addEventListener("click",function(e){var b=e.target.closest("button");if(b){load(b.dataset.k);}});
+$("bPlay").onclick=togglePlay;
+$("bNext").onclick=function(){unlockAudio(); if(S.done){load(S.k);return;} next(true)};
+$("bReset").onclick=function(){S.playing=false;setPlay();load(S.k)};
+$("bVoice").onclick=function(){S.voice=!S.voice;this.classList.toggle("on",S.voice);this.setAttribute("aria-label",S.voice?"Voice on":"Voice off");if(!S.voice)try{speechSynthesis.cancel()}catch(e){}};
+$("bHang").onclick=function(){ if(S.k==="normal") return; var stg=S.phase==="scam"?step().stage:3; if(stg<0) stg=0; S.hang={stage:stg,name:STAGES[stg][0].toLowerCase()}; renderEngine(); };
+$("bNums").onclick=function(){$("ov").hidden=false};
+$("ovx").onclick=function(){$("ov").hidden=true};
+$("ov").addEventListener("click",function(e){if(e.target===this)this.hidden=true});
+$("tabs").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;document.querySelectorAll("#tabs button").forEach(function(x){x.classList.toggle("on",x===b)});document.querySelectorAll(".pane").forEach(function(p){p.classList.toggle("on",p.id===b.dataset.p)});fit();});
+document.addEventListener("keydown",function(e){
+  if(e.target.tagName==="INPUT") return;
+  if(e.key===" "){e.preventDefault();togglePlay();}
+  else if(e.key==="ArrowRight"){unlockAudio(); if(S.done) load(S.k); else next(true);}
+  else if(e.key==="r"||e.key==="R"){S.playing=false;setPlay();load(S.k);}
+  else if(e.key>="1"&&e.key<="5"){load(ORDER[+e.key-1]);}
+  else if(e.key==="n"||e.key==="N"){$("ov").hidden=!$("ov").hidden;}
+  else if(e.key==="Escape"){$("ov").hidden=true;}
+});
+var h0=(location.hash||"").slice(1); load(SC[h0]?h0:"tech");
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fit);
+})();
+</script>
+
+</body></html>
