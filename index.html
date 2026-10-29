@@ -407,7 +407,7 @@ button:focus-visible{outline:2.5px solid var(--sorbet);outline-offset:2px}
         <div style="display:flex;justify-content:space-between;gap:8px"><span class="lbl">Signals, in the order they arrived</span><span class="lbl" style="color:var(--ink3)">weight × mix</span></div>
         <div class="feed" id="eFeed"></div>
       </div>
-      <div class="foot2"><b>Why the score jumps.</b> Each signal alone is noise. Different kinds of signal multiply rather than add: one kind ×1.0, two ×1.6, three ×2.1, four ×2.3. Ice Cream Security never interrupts on the score alone. It waits for the money move, the last reversible point, and the score decides how hard to step in. Weights shown are illustrative, to be tuned on labeled scam data.<br><br><b>Presenter keys.</b> While you narrate, space or the right arrow moves the scam one step. Once Ice Cream Security steps in, it runs and speaks on its own; the right arrow still skips ahead. T switches to auto play, R restarts, 1 to 5 pick a scenario, N opens the numbers. <span id="vName"></span> <span id="build">Build 2026.10.28 b6, narrator on text steps.</span></div>
+      <div class="foot2"><b>Why the score jumps.</b> Each signal alone is noise. Different kinds of signal multiply rather than add: one kind ×1.0, two ×1.6, three ×2.1, four ×2.3. Ice Cream Security never interrupts on the score alone. It waits for the money move, the last reversible point, and the score decides how hard to step in. Weights shown are illustrative, to be tuned on labeled scam data.<br><br><b>Presenter keys.</b> While you narrate, space or the right arrow moves the scam one step. Once Ice Cream Security steps in, it runs and speaks on its own; the right arrow still skips ahead. T switches to auto play, R restarts, 1 to 5 pick a scenario, N opens the numbers. <span id="vName"></span> <span id="build">Build 2026.10.29 b7, room prompt removed.</span></div>
     </div>
   </section>
   <section class="pane" id="pB">
@@ -913,7 +913,7 @@ function intNote(){
 function decision(){
   var s=sc();
   if(s.kind==="sos"){
-    var room2 = S.hang ? 'The room said it would hang up at <b>'+S.hang.name+'</b>. Carol was still on at the money move, and she did not have to win that argument. One tap did.' : 'Ask the room where they would have hung up, then replay. Carol never had to decide it was a scam. She only had to tap once.';
+    var room2 = S.hang ? 'The room said it would hang up at <b>'+S.hang.name+'</b>. Carol was still on at the money move, and she did not have to win that argument. One tap did.' : 'Carol never had to decide it was a scam. She only had to tap once.';
     return '<div class="lbl">At the money move</div><div class="d">The money was going to leave as cash, so there was no transfer to hold. Score <em>'+Math.round(S.score)+'</em> earned one question, and one tap brought in a second voice.</div>'+
       '<div class="stats"><div><b>1 ring</b>answered in 1.1 seconds</div><div><b>9 sec</b>until the caller hung up</div><div><b>'+s.saved+'</b>still hers</div></div>'+
       '<div class="room">'+room2+'<small>In 2025, 14% of government impersonation and 11% of tech support complaints reported paying in cash, and gold courier scams averaged about $430,000 per complaint. FBI IC3 2025 Annual Report, pp. 10, 12.</small></div>';
@@ -922,7 +922,7 @@ function decision(){
     return '<div class="lbl">At the money move</div><div class="d">Score <em>22</em> earns one question. Ray answers no, and the roofer is paid.</div><div class="stats"><div><b>1 tap</b>added friction</div><div><b>0</b>holds</div><div><b>0</b>family alerts</div></div><div class="room">Same person, same bank, same new payee as the tech support scam. The sequence is the difference, and only the sequence.</div>';
   }
   var room = S.hang ? 'The room said it would hang up at <b>'+S.hang.name+'</b>. '+s.person+' was still on at the money move. That gap between the calm version and the scared version is the whole product.'
-                    : 'Ask the room where they would have hung up, then replay. Almost everyone picks a stage before the money move.';
+                    : '';
   return '<div class="lbl">At the money move</div><div class="d">Score <em>'+Math.round(S.score)+'</em> earns the strongest tier. The transfer is held, '+s.contact.n+' is told, and '+s.person+' gets a question instead of a warning.</div>'+
     '<div class="stats"><div><b>'+s.firstToHold+'</b>first signal to hold</div><div><b>$0</b>money lost</div><div><b>'+s.saved+'</b>still theirs</div></div>'+
     '<div class="room">'+room+'<small>In 2025 the FBI reached 3,780 crypto investment victims. 78% did not know they were being scammed. FBI IC3 2025 Annual Report, p. 20.</small></div>';
