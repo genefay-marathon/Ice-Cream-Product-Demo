@@ -386,7 +386,7 @@ button:focus-visible{outline:2.5px solid var(--sorbet);outline-offset:2px}
     <div class="eng" id="eng">
       <div class="card">
         <div class="mask">
-          <div><h2 id="eMask">Tech support</h2><div class="who" id="eWho"></div></div>
+          <div><h2 id="eMask">Bank support</h2><div class="who" id="eWho"></div></div>
           <div class="win">Signal window<b id="eWin">0 min</b></div>
         </div>
         <div class="rail" id="eRail"></div>
@@ -412,7 +412,7 @@ button:focus-visible{outline:2.5px solid var(--sorbet);outline-offset:2px}
         <div style="display:flex;justify-content:space-between;gap:8px"><span class="lbl">Signals, in the order they arrived</span><span class="lbl" style="color:var(--ink3)">weight × mix</span></div>
         <div class="feed" id="eFeed"></div>
       </div>
-      <div class="foot2"><b>Why the score jumps.</b> Each signal alone is noise. Different kinds of signal multiply rather than add: one kind ×1.0, two ×1.6, three ×2.1, four ×2.3. Ice Cream Security never interrupts on the score alone. It waits for the money move, the last reversible point, and the score decides how hard to step in. Weights shown are illustrative, to be tuned on labeled scam data.<br><br><b>Presenter keys.</b> While you narrate, space or the right arrow moves the scam one step. Once Ice Cream Security steps in, it runs and speaks on its own; the right arrow still skips ahead. T switches to auto play, R restarts, 1 to 5 pick a scenario, N opens the numbers. <span id="vName"></span> <span id="build">Build 2026.10.29 b9, cone logo.</span></div>
+      <div class="foot2"><b>Why the score jumps.</b> Each signal alone is noise. Different kinds of signal multiply rather than add: one kind ×1.0, two ×1.6, three ×2.1, four ×2.3. Ice Cream Security never interrupts on the score alone. It waits for the money move, the last reversible point, and the score decides how hard to step in. Weights shown are illustrative, to be tuned on labeled scam data.<br><br><b>Presenter keys.</b> While you narrate, space or the right arrow moves the scam one step. Once Ice Cream Security steps in, it runs and speaks on its own; the right arrow still skips ahead. T switches to auto play, R restarts, 1 to 5 pick a scenario, N opens the numbers. <span id="vName"></span> <span id="build">Build 2026.10.29 b10, Bank support.</span></div>
     </div>
   </section>
   <section class="pane" id="pB">
@@ -470,7 +470,7 @@ var SRC={
   Money:"Bank or wallet partner signal, seen before the money settles."
 };
 var SC={
- tech:{ tab:"Tech support", mask:"Tech support", person:"Ray", contact:{n:"Sarah",rel:"daughter",i:"S"},
+ tech:{ tab:"Bank support", mask:"Bank support", person:"Ray", contact:{n:"Sarah",rel:"daughter",i:"S"},
   who:"Ray is a retired engineer who would tell you, sincerely, that he would never fall for this. His trusted person is his daughter, Sarah.",
   devices:"your iPhone and your MacBook",
   q:"Is someone on the phone with you right now telling you <em>not to tell your bank?</em>", qs:"If so, this is a scam. You are not in trouble, and nothing has been sent.",
@@ -924,7 +924,7 @@ function decision(){
       '<div class="room">'+room2+'<small>In 2025, 14% of government impersonation and 11% of tech support complaints reported paying in cash, and gold courier scams averaged about $430,000 per complaint. FBI IC3 2025 Annual Report, pp. 10, 12.</small></div>';
   }
   if(s.kind==="light"){
-    return '<div class="lbl">At the money move</div><div class="d">Score <em>22</em> earns one question. Ray answers no, and the roofer is paid.</div><div class="stats"><div><b>1 tap</b>added friction</div><div><b>0</b>holds</div><div><b>0</b>family alerts</div></div><div class="room">Same person, same bank, same new payee as the tech support scam. The sequence is the difference, and only the sequence.</div>';
+    return '<div class="lbl">At the money move</div><div class="d">Score <em>22</em> earns one question. Ray answers no, and the roofer is paid.</div><div class="stats"><div><b>1 tap</b>added friction</div><div><b>0</b>holds</div><div><b>0</b>family alerts</div></div><div class="room">Same person, same bank, same new payee as the bank support scam. The sequence is the difference, and only the sequence.</div>';
   }
   var room = S.hang ? 'The room said it would hang up at <b>'+S.hang.name+'</b>. '+s.person+' was still on at the money move. That gap between the calm version and the scared version is the whole product.'
                     : '';
