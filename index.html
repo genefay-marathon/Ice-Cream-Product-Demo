@@ -4,7 +4,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..800,0..100,0..1&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..800,0..100,0..1&family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap">
 <style>
 /* Layout: presenter theater. Protected phone left, the engine in the middle, trusted contact phone right. Below 1100px the three become tabs. */
 :root{
@@ -374,10 +374,24 @@ button:focus-visible{outline:2.5px solid var(--sorbet);outline-offset:2px}
 .capeng{display:inline-flex;align-items:center;gap:.3em}
 .capcone{display:inline-block;height:1.15em;width:.885em;line-height:0}
 .capcone svg{width:100%;height:100%;display:block}
+/* b17: Sarah's phone is an Android (Pixel style) */
+#pB .phone{border-radius:46px;padding:10px;background:#202124;box-shadow:0 0 0 1.5px #3c4043 inset,0 30px 70px rgba(36,28,23,.28),0 6px 16px rgba(36,28,23,.16)}
+#pB .screen{border-radius:36px;font-family:Roboto,"Google Sans",Inter,Arial,sans-serif}
+#pB .island{display:none!important}
+#pB .screen::before{content:"";position:absolute;top:16px;left:50%;width:22px;height:22px;margin-left:-11px;border-radius:50%;background:#0b0b0c;box-shadow:0 0 0 2px rgba(255,255,255,.06);z-index:60}
+#pB .sbar{padding:8px 30px 0 32px;font-size:15px;font-weight:500;height:50px}
+#pB .lock{background:linear-gradient(170deg,#3d5a78 0%,#2b3f56 55%,#1b2633 100%)}
+#pB .lock .dt{margin-top:96px;font-size:18px;font-weight:400;letter-spacing:.2px}
+#pB .lock .tm{font-size:104px;font-weight:400;letter-spacing:-2px}
+#pB .lock .flash,#pB .lock .cam{display:none}
+#pB .note{background:#f1f3f4;backdrop-filter:none;-webkit-backdrop-filter:none;border-radius:26px;font-family:Roboto,Arial,sans-serif}
+#pB .note .ic{border-radius:50%}
+#pB .homebar{width:108px;height:4px;bottom:10px}
+#pB .fam .callin{border-radius:28px;background:#2d2f31}
 </style>
 
 </head><body><header class="top">
-  <div class="brand" title="Build 2026.10.30 b16, cone in The Engine label."><span id="brandmk"></span><span class="wm">Ice Cream Security</span></div>
+  <div class="brand" title="Build 2026.10.30 b17, Sarah on Android."><span id="brandmk"></span><span class="wm">Ice Cream Security</span></div>
   <nav class="masks" id="masks" aria-label="Scenarios"></nav>
   <div class="ctl">
     <button id="bPlay" class="pri" aria-label="Play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg><span class="lbtxt">Play</span></button>
@@ -393,7 +407,7 @@ button:focus-visible{outline:2.5px solid var(--sorbet);outline-offset:2px}
   <div class="tabs" id="tabs">
     <button data-p="pA" class="on" id="tabA">Ray's iPhone</button>
     <button data-p="pE">The engine</button>
-    <button data-p="pB" id="tabB">Sarah's iPhone</button>
+    <button data-p="pB" id="tabB">Sarah's Android</button>
   </div>
   <section class="pane on" id="pA">
     <div class="cap"><span id="capA">Ray's iPhone</span><span>Protected person</span></div>
@@ -434,7 +448,7 @@ button:focus-visible{outline:2.5px solid var(--sorbet);outline-offset:2px}
     </div>
   </section>
   <section class="pane" id="pB">
-    <div class="cap"><span id="capB">Sarah's iPhone</span><span>Trusted person</span></div>
+    <div class="cap"><span id="capB">Sarah's Android</span><span>Trusted person</span></div>
     <div class="slot"><div class="pwrap"><div class="phone"><div class="screen" id="scrB"></div></div></div></div>
   </section>
 </main>
@@ -1033,8 +1047,8 @@ function load(k){
   S={k:k,i:0,phase:"scam",ii:0,score:0,ch:{},sigs:[],hist:[],playing:S.playing,hang:null,voice:S.voice,done:false,mode:S.mode};
   shownScore=0; applyStep();
   document.querySelectorAll("#masks button").forEach(function(b){b.classList.toggle("on",b.dataset.k===k)});
-  var s=sc(); $("capA").textContent=s.person+"'s iPhone"; $("capB").textContent=s.contact.n+"'s iPhone";
-  $("tabA").textContent=s.person+"'s iPhone"; $("tabB").textContent=s.contact.n+"'s iPhone";
+  var s=sc(); $("capA").textContent=s.person+"'s iPhone"; $("capB").textContent=s.contact.n+"'s Android";
+  $("tabA").textContent=s.person+"'s iPhone"; $("tabB").textContent=s.contact.n+"'s Android";
   setPlay(); render(); schedule();
 }
 var ICO_PLAY='<path d="M7 5l12 7-12 7z"/>', ICO_PAUSE='<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>', ICO_SPEAK='<path d="M4 9v6h4l5 4V5L8 9z"/>', ICO_STEP='<path d="M6 5l9 7-9 7z"/><rect x="16" y="5" width="3" height="14" rx="1"/>';
