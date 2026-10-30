@@ -371,10 +371,13 @@ button:focus-visible{outline:2.5px solid var(--sorbet);outline-offset:2px}
 .rail{gap:8px}
 @media (min-width:1100px){.stage{grid-template-columns:minmax(0,.95fr) minmax(0,1.45fr) minmax(0,.82fr)}}
 @media (min-width:1100px){.top .ctl{order:1}.top .masks{order:2;justify-content:flex-end}}
+.capeng{display:inline-flex;align-items:center;gap:.3em}
+.capcone{display:inline-block;height:1.15em;width:.885em;line-height:0}
+.capcone svg{width:100%;height:100%;display:block}
 </style>
 
 </head><body><header class="top">
-  <div class="brand" title="Build 2026.10.30 b15, auto play with pause."><span id="brandmk"></span><span class="wm">Ice Cream Security</span></div>
+  <div class="brand" title="Build 2026.10.30 b16, cone in The Engine label."><span id="brandmk"></span><span class="wm">Ice Cream Security</span></div>
   <nav class="masks" id="masks" aria-label="Scenarios"></nav>
   <div class="ctl">
     <button id="bPlay" class="pri" aria-label="Play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg><span class="lbtxt">Play</span></button>
@@ -397,7 +400,7 @@ button:focus-visible{outline:2.5px solid var(--sorbet);outline-offset:2px}
     <div class="slot"><div class="pwrap"><div class="phone"><div class="screen" id="scrA"></div></div></div></div>
   </section>
   <section class="pane" id="pE">
-    <div class="cap"><span>The engine</span><span>What Ice Cream Security sees</span></div>
+    <div class="cap"><span class="capeng">The <i class="capcone" aria-hidden="true"><svg viewBox="0 0 80 104"><defs><clipPath id="capconeclip"><polygon points="20,44 60,44 40,100"/></clipPath></defs><polygon points="20,44 60,44 40,100" fill="#e8b26a"/><g clip-path="url(#capconeclip)" stroke="#c98a3e" stroke-width="2.2"><path d="M10,40 L70,100 M10,56 L60,106 M24,36 L80,92 M70,40 L10,100 M70,56 L20,106 M56,36 L0,92"/></g><path d="M18,44 A22,22 0 1,1 62,44 Q57,50 51,45 Q46,52 40,46 Q34,52 29,45 Q23,50 18,44Z" fill="#c2185b"/><circle cx="32" cy="30" r="4" fill="#fff" opacity=".35"/></svg></i> engine</span><span>What Ice Cream Security sees</span></div>
     <div class="eng" id="eng">
       <div class="card">
         <div class="mask">
