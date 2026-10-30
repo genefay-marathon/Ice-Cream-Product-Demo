@@ -358,10 +358,23 @@ button:focus-visible{outline:2.5px solid var(--sorbet);outline-offset:2px}
 .ctl button.pri .lbtxt{display:inline!important}
 @keyframes nudge{0%,100%{box-shadow:0 0 0 0 rgba(74,99,80,0)}50%{box-shadow:0 0 0 5px rgba(74,99,80,.25)}}
 .ctl button.pri.run{background:var(--cocoa)}
+/* b13: hide narration note, signal feed, fine print; give the center more room */
+#eNoteCard,#eFeedCard,.foot2{display:none!important}
+.eng{gap:16px;padding:4px 6px 10px}
+.eng .card{padding:20px 24px}
+.eng .row2{gap:16px}
+.mask{flex-wrap:nowrap}
+.mask h2{font-size:34px}
+.mask .who{font-size:15px}
+.eng .scoreN b{font-size:72px}
+.line .q{font-size:23px;line-height:1.32}
+.rail{gap:8px}
+@media (min-width:1100px){.stage{grid-template-columns:minmax(0,.95fr) minmax(0,1.45fr) minmax(0,.82fr)}}
+@media (min-width:1100px){.top .ctl{order:1}.top .masks{order:2;justify-content:flex-end}}
 </style>
 
 </head><body><header class="top">
-  <div class="brand"><span id="brandmk"></span><span class="wm">Ice Cream Security</span></div>
+  <div class="brand" title="Build 2026.10.30 b13, cleaner engine panel."><span id="brandmk"></span><span class="wm">Ice Cream Security</span></div>
   <nav class="masks" id="masks" aria-label="Scenarios"></nav>
   <div class="ctl">
     <button id="bPlay" class="pri" aria-label="Play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg><span class="lbtxt">Play</span></button>
@@ -410,11 +423,11 @@ button:focus-visible{outline:2.5px solid var(--sorbet);outline-offset:2px}
       </div>
       <div class="card decision" id="eDec" hidden></div>
       <div class="card" id="eNoteCard"><div class="note2" id="eNote"></div></div>
-      <div class="card">
+      <div class="card" id="eFeedCard">
         <div style="display:flex;justify-content:space-between;gap:8px"><span class="lbl">Signals, in the order they arrived</span><span class="lbl" style="color:var(--ink3)">weight × mix</span></div>
         <div class="feed" id="eFeed"></div>
       </div>
-      <div class="foot2"><b>Why the score jumps.</b> Each signal alone is noise. Different kinds of signal multiply rather than add: one kind ×1.0, two ×1.6, three ×2.1, four ×2.3. Ice Cream Security never interrupts on the score alone. It waits for the money move, the last reversible point, and the score decides how hard to step in. Weights shown are illustrative, to be tuned on labeled scam data.<br><br><b>Presenter keys.</b> Start Demo or space begins. While you narrate, Next, space, or the right arrow moves the scam one step. Once Ice Cream Security steps in, it runs and speaks on its own. T switches to auto play, R restarts, 1 or 2 picks a scenario, N opens the numbers. <span id="vName"></span> <span id="build">Build 2026.10.30 b12, Start Demo button, two scenarios.</span></div>
+      <div class="foot2"><b>Why the score jumps.</b> Each signal alone is noise. Different kinds of signal multiply rather than add: one kind ×1.0, two ×1.6, three ×2.1, four ×2.3. Ice Cream Security never interrupts on the score alone. It waits for the money move, the last reversible point, and the score decides how hard to step in. Weights shown are illustrative, to be tuned on labeled scam data.<br><br><b>Presenter keys.</b> Start Demo or space begins. While you narrate, Next, space, or the right arrow moves the scam one step. Once Ice Cream Security steps in, it runs and speaks on its own. T switches to auto play, R restarts, 1 or 2 picks a scenario, N opens the numbers. <span id="vName"></span> </div>
     </div>
   </section>
   <section class="pane" id="pB">
