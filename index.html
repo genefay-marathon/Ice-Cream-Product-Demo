@@ -359,7 +359,7 @@ button:focus-visible{outline:2.5px solid var(--sorbet);outline-offset:2px}
 @keyframes nudge{0%,100%{box-shadow:0 0 0 0 rgba(74,99,80,0)}50%{box-shadow:0 0 0 5px rgba(74,99,80,.25)}}
 .ctl button.pri.run{background:var(--cocoa)}
 /* b13: hide narration note, signal feed, fine print; give the center more room */
-#eNoteCard,#eFeedCard,.foot2{display:none!important}
+#eNoteCard,#eFeedCard,.foot2,#bMode,#bVoice{display:none!important}
 .eng{gap:16px;padding:4px 6px 10px}
 .eng .card{padding:20px 24px}
 .eng .row2{gap:16px}
@@ -374,7 +374,7 @@ button:focus-visible{outline:2.5px solid var(--sorbet);outline-offset:2px}
 </style>
 
 </head><body><header class="top">
-  <div class="brand" title="Build 2026.10.30 b13, cleaner engine panel."><span id="brandmk"></span><span class="wm">Ice Cream Security</span></div>
+  <div class="brand" title="Build 2026.10.30 b14, narrate and voice buttons removed."><span id="brandmk"></span><span class="wm">Ice Cream Security</span></div>
   <nav class="masks" id="masks" aria-label="Scenarios"></nav>
   <div class="ctl">
     <button id="bPlay" class="pri" aria-label="Play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg><span class="lbtxt">Play</span></button>
@@ -1170,7 +1170,6 @@ document.addEventListener("keydown",function(e){
   else if(e.key==="ArrowRight"){unlockAudio(); if(S.done) load(S.k); else next(true);}
   else if(e.key==="r"||e.key==="R"){S.playing=false;setPlay();load(S.k);}
   else if(e.key>="1"&&e.key<="9"&&ORDER[+e.key-1]){load(ORDER[+e.key-1]);}
-  else if(e.key==="t"||e.key==="T"){toggleMode();}
   else if(e.key==="n"||e.key==="N"){$("ov").hidden=!$("ov").hidden;}
   else if(e.key==="Escape"){$("ov").hidden=true;}
 });
