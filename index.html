@@ -374,7 +374,7 @@ button:focus-visible{outline:2.5px solid var(--sorbet);outline-offset:2px}
 </style>
 
 </head><body><header class="top">
-  <div class="brand" title="Build 2026.10.30 b14, narrate and voice buttons removed."><span id="brandmk"></span><span class="wm">Ice Cream Security</span></div>
+  <div class="brand" title="Build 2026.10.30 b15, auto play with pause."><span id="brandmk"></span><span class="wm">Ice Cream Security</span></div>
   <nav class="masks" id="masks" aria-label="Scenarios"></nav>
   <div class="ctl">
     <button id="bPlay" class="pri" aria-label="Play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg><span class="lbtxt">Play</span></button>
@@ -651,7 +651,7 @@ var INT={
 var INTDUR={sosask:5800,ring:3800,conf:8200,gone:5400,human:7800,safe:6000,pause:4400,pausetx:4000,ask:6200,distance:6000,hold:6500,calling:7000,light:5200,sent:4500};
 
 /* ============ state ============ */
-var S={k:"tech",i:0,phase:"scam",ii:0,score:0,shown:0,ch:{},sigs:[],hist:[],playing:false,hang:null,voice:true,done:false,mode:"talk"};
+var S={k:"tech",i:0,phase:"scam",ii:0,score:0,shown:0,ch:{},sigs:[],hist:[],playing:false,hang:null,voice:true,done:false,mode:"auto"};
 var timer=null, tickers=[];
 var $=function(id){return document.getElementById(id)};
 
@@ -1040,7 +1040,8 @@ function setPlay(){
   var fresh=(S.phase==="scam" && S.i===0 && !S.playing);
   if(S.done || fresh){ lbl="Start Demo"; ico=ICO_PLAY; wait=true; }
   else if(talk){ if(S.phase==="int"){ lbl="Running"; ico=ICO_SPEAK; run=true; } else { lbl="Next"; ico=ICO_STEP; wait=true; } }
-  else { lbl=S.playing?"Pause":"Play"; ico=S.playing?ICO_PAUSE:ICO_PLAY; }
+  else if(S.playing){ lbl="Pause"; ico=ICO_PAUSE; }
+  else { lbl="Resume"; ico=ICO_PLAY; wait=true; }
   b.querySelector(".lbtxt").textContent=lbl; b.querySelector("svg").innerHTML=ico; b.setAttribute("aria-label",lbl);
   b.classList.toggle("wait",wait); b.classList.toggle("run",run);
   var m=$("bMode"); if(m){ m.classList.toggle("on",talk); m.querySelector(".lbtxt").textContent=talk?"You narrate":"Auto play"; m.setAttribute("aria-label",talk?"Presenter mode on":"Auto play on"); }
@@ -1052,8 +1053,13 @@ function togglePlay(){
     if(S.phase!=="int") next(true);
     return;
   }
-  if(S.done){ S.playing=true; load(S.k); return; }
-  S.playing=!S.playing; if(S.playing) next(false); else { clearTimeout(timer); schedTok++; setPlay(); }
+  if(S.done){ S.playing=true; load(S.k); next(false); return; }
+  var fresh=(S.phase==="scam" && S.i===0);
+  if(!S.playing && fresh){ S.playing=true; next(false); return; }
+  if(S.playing){ S.playing=false; clearTimeout(timer); schedTok++; stopSpeech(); setPlay(); return; }
+  S.playing=true;
+  if(S.phase==="scam") playScene(step().talk); else onInt();
+  schedule();
 }
 function toggleMode(){
   unlockAudio();
