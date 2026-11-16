@@ -374,6 +374,10 @@ button:focus-visible{outline:2.5px solid var(--sorbet);outline-offset:2px}
 .capeng{display:inline-flex;align-items:center;gap:.3em}
 .capcone{display:inline-block;height:1.15em;width:.885em;line-height:0}
 .capcone svg{width:100%;height:100%;display:block}
+.lblmark{display:inline-flex;align-items:center;gap:7px;min-width:0;line-height:1.1}
+.lblmark+.state{flex:none;white-space:nowrap;margin:0}
+.lblcone{display:inline-block;height:20px;width:15.4px;line-height:0;flex:none}
+.lblcone svg{width:100%;height:100%;display:block}
 /* b17: Sarah's phone is an Android (Pixel style) */
 #pB .phone{border-radius:46px;padding:10px;background:#202124;box-shadow:0 0 0 1.5px #3c4043 inset,0 30px 70px rgba(36,28,23,.28),0 6px 16px rgba(36,28,23,.16)}
 #pB .screen{border-radius:36px;font-family:Roboto,"Google Sans",Inter,Arial,sans-serif}
@@ -455,7 +459,7 @@ body.sounding #bVoice.on .bars i{animation:eqb .9s ease-in-out infinite}
       </div>
       <div class="row2">
         <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="lbl">Sequence score</span><span class="state" id="eState"><i></i><span>Watching</span></span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="lbl lblmark"><i class="lblcone" aria-hidden="true"><svg viewBox="0 0 80 104"><defs><clipPath id="lblconeclip"><polygon points="20,44 60,44 40,100"/></clipPath></defs><polygon points="20,44 60,44 40,100" fill="#e8b26a"/><g clip-path="url(#lblconeclip)" stroke="#c98a3e" stroke-width="2.2"><path d="M10,40 L70,100 M10,56 L60,106 M24,36 L80,92 M70,40 L10,100 M70,56 L20,106 M56,36 L0,92"/></g><path d="M18,44 A22,22 0 1,1 62,44 Q57,50 51,45 Q46,52 40,46 Q34,52 29,45 Q23,50 18,44Z" fill="#c2185b"/><circle cx="32" cy="30" r="4" fill="#fff" opacity=".35"/></svg></i>Cyber Risk Score</span><span class="state" id="eState"><i></i><span>Watching</span></span></div>
           <div class="scoreN" style="margin-top:10px"><b id="eScore">0</b><span style="font-size:13px;color:var(--ink3)">of 100</span></div>
           <div class="ladder" id="eLadder"><span></span><span></span><span></span><span></span><div class="pin" id="ePin" style="left:0"></div></div>
           <div class="ladderl" id="eLadL"><span>Watch</span><span>Ask</span><span>Name it, delay</span><span>Hold, call family</span></div>
